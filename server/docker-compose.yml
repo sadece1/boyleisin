@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: campscape-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: campscape_marketplace
+      MYSQL_USER: campscape_user
+      MYSQL_PASSWORD: CampscapeApp2025!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/migrations/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: campscape-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mysql
+      DB_USER: campscape_user
+      DB_PASSWORD: CampscapeApp2025!
+      DB_NAME: campscape_marketplace
+      DB_PORT: 3306
+      JWT_SECRET: CampscapeJWTSecret2025!
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:5173
+      MAX_FILE_SIZE: 10485760
+      ALLOWED_FILE_TYPES: image/jpeg,image/png,image/webp
+      UPLOAD_DIR: ./uploads
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - campscape-network
+
+volumes:
+  mysql_data:
+
+networks:
+  campscape-network:
+    driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+

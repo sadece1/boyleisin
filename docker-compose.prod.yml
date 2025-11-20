@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      NODE_ENV: production
+      ENABLE_VIRUS_SCAN: ${ENABLE_VIRUS_SCAN:-true}
+      REQUIRE_VIRUS_SCAN: ${REQUIRE_VIRUS_SCAN:-false}
+      ENABLE_CSRF: ${ENABLE_CSRF:-true}
+      HTTPS_ENFORCE: ${HTTPS_ENFORCE:-true}
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  frontend:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  mysql:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+

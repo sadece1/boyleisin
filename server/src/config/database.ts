@@ -1,0 +1,60 @@
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+interface DatabaseConfig {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port: number;
+  waitForConnections: boolean;
+  connectionLimit: number;
+  queueLimit: number;
+  enableKeepAlive: boolean;
+  keepAliveInitialDelay: number;
+}
+
+const dbConfig: DatabaseConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'campscape_marketplace',
+  port: parseInt(process.env.DB_PORT || '3306', 10),
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+};
+
+// Create connection pool
+const pool = mysql.createPool(dbConfig);
+
+// Test connection
+export const testConnection = async (): Promise<void> => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('✅ Database connection established successfully');
+    connection.release();
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    throw error;
+  }
+};
+
+export default pool;
+
+
+
+
+
+
+
+
+
+
+
+
+
