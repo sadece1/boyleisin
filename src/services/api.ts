@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { config } from '@/config';
 
-// Use /api proxy in development, full URL in production
+// Use /api proxy in development, relative /api in production
 const apiBaseUrl = import.meta.env.DEV 
   ? '/api' 
-  : config.apiBaseUrl;
+  : (config.apiBaseUrl.startsWith('http') ? config.apiBaseUrl : '/api');
 
 const api: AxiosInstance = axios.create({
   baseURL: apiBaseUrl,
