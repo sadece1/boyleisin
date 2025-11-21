@@ -52,7 +52,7 @@ app.use(helmet({
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+      upgradeInsecureRequests: null, // Disabled - Nginx handles HTTPS redirect
     },
   },
   crossOriginEmbedderPolicy: false, // Allow images from external sources
