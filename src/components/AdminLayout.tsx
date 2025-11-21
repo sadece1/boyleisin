@@ -115,7 +115,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </button>
           </div>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 lg:ml-64`}>
