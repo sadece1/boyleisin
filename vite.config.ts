@@ -5,6 +5,20 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'gsap'],
+        },
+      },
+    },
+    // Ensure consistent file names
+    chunkSizeWarningLimit: 1000,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
