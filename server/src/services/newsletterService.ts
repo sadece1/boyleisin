@@ -84,8 +84,8 @@ export const getSubscribers = async (query: any) => {
   const total = countResult[0].total;
 
   const [subscribers] = await pool.execute<Array<any>>(
-    `SELECT * FROM newsletter_subscriptions ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM newsletter_subscriptions ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   return {

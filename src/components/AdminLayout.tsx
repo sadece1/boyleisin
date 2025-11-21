@@ -12,7 +12,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile'da kapalı başla
+  // Desktop'ta açık, mobile'da kapalı
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024; // lg breakpoint
+    }
+    return true; // SSR için default açık
+  });
 
   const handleLogout = () => {
     logout();
@@ -51,13 +57,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -250 }}
-        animate={{ x: isSidebarOpen ? 0 : -250 }}
-        transition={{ duration: 0.3 }}
-        className={`fixed left-0 top-0 h-full bg-white dark:bg-gray-800 shadow-lg z-40 ${
-          isSidebarOpen ? 'w-64' : 'w-0'
-        } overflow-hidden lg:relative lg:translate-x-0 lg:z-auto`}
+      <aside
+        className={`fixed left-0 top-0 h-full bg-white dark:bg-gray-800 shadow-lg z-40 w-64 transition-transform duration-300 lg:relative lg:translate-x-0 lg:z-auto ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}

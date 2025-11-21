@@ -41,8 +41,8 @@ export const getAppointments = async (query: any) => {
   const total = countResult[0].total;
 
   const [appointments] = await pool.execute<Array<any>>(
-    `SELECT * FROM appointments ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM appointments ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   return {
