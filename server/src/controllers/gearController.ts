@@ -10,9 +10,9 @@ import {
   getGearByCategory,
   getRecommendedGear,
 } from '../services/gearService';
+import { getCategoryById, getCategoryBySlug } from '../services/categoryService';
 import { asyncHandler } from '../middleware/errorHandler';
 import { parseDate } from '../utils/helpers';
-import { createGearSchema, updateGearSchema } from '../validators';
 
 /**
  * Get all gear
@@ -57,116 +57,6 @@ export const getSingleGear = asyncHandler(async (req: Request, res: Response) =>
 });
 
 /**
- * Helper to parse FormData or JSON body and resolve category slug to ID
- * Note: Express doesn't parse multipart/form-data automatically, 
- * so we handle both JSON and urlencoded formats
- */
-const parseGearData = async (req: Request): Promise<any> => {
-  const body: any = {};
-  
-  // Handle both camelCase (from frontend) and snake_case (from backend)
-  if (req.body.name) body.name = req.body.name;
-  if (req.body.description) body.description = req.body.description;
-  
-  // Handle category_id - can be categoryId, category_id, or category (slug)
-  // Try to resolve slug to ID if needed
-  let categoryId: string | undefined;
-  if (req.body.categoryId) {
-    categoryId = req.body.categoryId;
-  } else if (req.body.category_id) {
-    categoryId = req.body.category_id;
-  } else if (req.body.category) {
-    categoryId = req.body.category; // Will be resolved below if it's a slug
-  }
-  
-  // If categoryId looks like a slug (not UUID format), try to find category by slug
-  if (categoryId && !categoryId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    // Likely a slug, try to find category
-    try {
-      const category = await getCategoryBySlug(categoryId);
-      if (category) {
-        body.category_id = category.id;
-      } else {
-        // If not found by slug, try to find by ID (maybe it's an ID that doesn't match UUID format)
-        const categoryById = await getCategoryById(categoryId);
-        if (categoryById) {
-          body.category_id = categoryById.id;
-        } else {
-          // If not found, use as-is (validation will catch if invalid)
-          body.category_id = categoryId;
-        }
-      }
-    } catch (error) {
-      // If error, use as-is (validation will catch if invalid)
-      body.category_id = categoryId;
-    }
-  } else if (categoryId) {
-    body.category_id = categoryId;
-  }
-  
-  // Handle images - can be array or individual image_0, image_1, etc.
-  if (req.body.images) {
-    body.images = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
-  } else {
-    // Check for image_0, image_1, etc. pattern
-    const images: string[] = [];
-    let index = 0;
-    while (req.body[`image_${index}`]) {
-      const url = req.body[`image_${index}`];
-      if (url && typeof url === 'string' && url.trim()) {
-        images.push(url.trim());
-      }
-      index++;
-    }
-    if (images.length > 0) {
-      body.images = images;
-    }
-  }
-  
-  // Handle price_per_day
-  if (req.body.pricePerDay !== undefined) {
-    body.price_per_day = parseFloat(String(req.body.pricePerDay));
-  } else if (req.body.price_per_day !== undefined) {
-    body.price_per_day = parseFloat(String(req.body.price_per_day));
-  }
-  
-  // Handle deposit
-  if (req.body.deposit !== undefined && req.body.deposit !== null && req.body.deposit !== '') {
-    body.deposit = parseFloat(String(req.body.deposit));
-  }
-  
-  // Handle status
-  if (req.body.status) {
-    body.status = req.body.status;
-  }
-  
-  // Handle available
-  if (req.body.available !== undefined) {
-    body.available = req.body.available === 'true' || req.body.available === true || req.body.available === '1';
-  }
-  
-  // Handle optional fields
-  if (req.body.brand) body.brand = req.body.brand;
-  if (req.body.color) body.color = req.body.color;
-  if (req.body.specifications) {
-    body.specifications = typeof req.body.specifications === 'string' 
-      ? JSON.parse(req.body.specifications) 
-      : req.body.specifications;
-  }
-  if (req.body.recommendedProducts) {
-    body.recommended_products = typeof req.body.recommendedProducts === 'string'
-      ? JSON.parse(req.body.recommendedProducts)
-      : req.body.recommendedProducts;
-  } else if (req.body.recommended_products) {
-    body.recommended_products = typeof req.body.recommended_products === 'string'
-      ? JSON.parse(req.body.recommended_products)
-      : req.body.recommended_products;
-  }
-  
-  return body;
-};
-
-/**
  * Create gear
  */
 export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -178,31 +68,7 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Parse FormData or JSON
-  const gearData = parseGearData(req);
-  
-  // Validate parsed data
-  const { error, value } = createGearSchema.validate(gearData, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true,
-  });
-  
-  if (error) {
-    const errors = error.details.map((detail) => ({
-      field: detail.path.join('.'),
-      message: detail.message,
-    }));
-    
-    res.status(400).json({
-      success: false,
-      message: 'Validation error',
-      errors,
-    });
-    return;
-  }
-  
-  const gear = await createGear(value, req.user.id);
+  const gear = await createGear(req.body, req.user.id);
 
   res.status(201).json({
     success: true,
@@ -230,31 +96,7 @@ export const update = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const isAdmin = req.user.role === 'admin';
 
-  // Parse FormData or JSON
-  const gearData = parseGearData(req);
-  
-  // Validate parsed data
-  const { error, value } = updateGearSchema.validate(gearData, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true,
-  });
-  
-  if (error) {
-    const errors = error.details.map((detail) => ({
-      field: detail.path.join('.'),
-      message: detail.message,
-    }));
-    
-    res.status(400).json({
-      success: false,
-      message: 'Validation error',
-      errors,
-    });
-    return;
-  }
-  
-  const gear = await updateGear(id, value, req.user.id, isAdmin);
+  const gear = await updateGear(id, req.body, req.user.id, isAdmin);
 
   res.status(200).json({
     success: true,
