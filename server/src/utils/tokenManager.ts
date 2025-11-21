@@ -17,11 +17,12 @@ const BLACKLIST_CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
  * Generate access token
  */
 export const generateAccessToken = (payload: UserPayload): string => {
-  return jwt.sign(payload, jwtConfig.secret, {
-    expiresIn: String(jwtConfig.expiresIn),
+  const options: jwt.SignOptions = {
+    expiresIn: jwtConfig.expiresIn,
     issuer: jwtConfig.issuer,
     audience: jwtConfig.audience,
-  });
+  };
+  return jwt.sign(payload, jwtConfig.secret, options);
 };
 
 /**
