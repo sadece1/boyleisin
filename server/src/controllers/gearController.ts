@@ -57,26 +57,51 @@ export const getSingleGear = asyncHandler(async (req: Request, res: Response) =>
 });
 
 /**
- * Helper to parse FormData or JSON body
+ * Helper to parse FormData or JSON body and resolve category slug to ID
  * Note: Express doesn't parse multipart/form-data automatically, 
  * so we handle both JSON and urlencoded formats
  */
-const parseGearData = (req: Request): any => {
+const parseGearData = async (req: Request): Promise<any> => {
   const body: any = {};
   
   // Handle both camelCase (from frontend) and snake_case (from backend)
   if (req.body.name) body.name = req.body.name;
   if (req.body.description) body.description = req.body.description;
   
-  // Handle category_id - can be categoryId, category_id, or category
+  // Handle category_id - can be categoryId, category_id, or category (slug)
+  // Try to resolve slug to ID if needed
+  let categoryId: string | undefined;
   if (req.body.categoryId) {
-    body.category_id = req.body.categoryId;
+    categoryId = req.body.categoryId;
   } else if (req.body.category_id) {
-    body.category_id = req.body.category_id;
+    categoryId = req.body.category_id;
   } else if (req.body.category) {
-    // If category is a slug, we need to find the category ID
-    // For now, use it as-is (backend should handle slug to ID conversion)
-    body.category_id = req.body.category;
+    categoryId = req.body.category; // Will be resolved below if it's a slug
+  }
+  
+  // If categoryId looks like a slug (not UUID format), try to find category by slug
+  if (categoryId && !categoryId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    // Likely a slug, try to find category
+    try {
+      const category = await getCategoryBySlug(categoryId);
+      if (category) {
+        body.category_id = category.id;
+      } else {
+        // If not found by slug, try to find by ID (maybe it's an ID that doesn't match UUID format)
+        const categoryById = await getCategoryById(categoryId);
+        if (categoryById) {
+          body.category_id = categoryById.id;
+        } else {
+          // If not found, use as-is (validation will catch if invalid)
+          body.category_id = categoryId;
+        }
+      }
+    } catch (error) {
+      // If error, use as-is (validation will catch if invalid)
+      body.category_id = categoryId;
+    }
+  } else if (categoryId) {
+    body.category_id = categoryId;
   }
   
   // Handle images - can be array or individual image_0, image_1, etc.
