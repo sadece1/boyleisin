@@ -191,6 +191,17 @@ export const getUserAgent = (req: any): string | undefined => {
   return req.headers['user-agent'];
 };
 
+// Export as securityLogger for backward compatibility
+export const securityLogger = {
+  log: logSecurityEvent,
+  logFailedLogin,
+  logSuccessfulLogin,
+  logBruteForce,
+  logSuspiciousActivity,
+  logUnauthorizedAccess,
+  logAdminAction,
+};
+
 
 
 

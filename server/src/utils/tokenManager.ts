@@ -18,7 +18,7 @@ const BLACKLIST_CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
  */
 export const generateAccessToken = (payload: UserPayload): string => {
   return jwt.sign(payload, jwtConfig.secret, {
-    expiresIn: jwtConfig.expiresIn,
+    expiresIn: jwtConfig.expiresIn as string,
     issuer: jwtConfig.issuer,
     audience: jwtConfig.audience,
   });

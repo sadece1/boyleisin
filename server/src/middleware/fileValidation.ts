@@ -9,7 +9,7 @@ import {
   detectPolyglotFile,
   generateFileHash,
 } from '../utils/imageValidator';
-import { securityLogger, SecurityEventType } from '../utils/securityLogger';
+import { logSecurityEvent, SecurityEventType } from '../utils/securityLogger';
 import { scanFile } from '../utils/virusScanner';
 import { updateVirusScanStatus } from '../services/uploadService';
 import { moveToQuarantine } from '../utils/quarantineManager';
@@ -42,6 +42,10 @@ export const validateUploadedFile = async (
 
   try {
     for (const file of files) {
+      // Type guard: ensure file is Express.Multer.File
+      if (Array.isArray(file) || !file.filename) {
+        continue;
+      }
       const filePath = path.join(process.cwd(), uploadConfig.uploadDir, file.filename);
 
       if (!fs.existsSync(filePath)) {
@@ -81,7 +85,7 @@ export const validateUploadedFile = async (
       if (!isValid) {
         fs.unlinkSync(filePath);
         logger.warn(`Invalid file signature detected: ${file.filename}`);
-        securityLogger.logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
+        logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
           userId: (req as any).user?.id,
           ip: (req as any).ip,
           details: {
@@ -110,7 +114,7 @@ export const validateUploadedFile = async (
         if (polyglotCheck.isPolyglot) {
           fs.unlinkSync(filePath);
           logger.warn(`Polyglot file detected: ${file.filename}`, polyglotCheck.detectedTypes);
-          securityLogger.logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
+          logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
             userId: (req as any).user?.id,
             ip: (req as any).ip,
             details: {
@@ -225,7 +229,7 @@ export const validateUploadedFile = async (
 
       // 7. Virus scanning (if enabled, skip in development)
       const userId = (req as any).user?.id;
-      if (!isDevelopment && process.env.ENABLE_VIRUS_SCAN === 'true' && process.env.ENABLE_VIRUS_SCAN !== 'false') {
+      if (!isDevelopment && process.env.ENABLE_VIRUS_SCAN === 'true') {
         try {
           const virusScanResult = await scanFile(filePath);
           
@@ -247,7 +251,7 @@ export const validateUploadedFile = async (
               `Virus detected: ${virusScanResult.threatName || 'Unknown'}`
             );
 
-            securityLogger.logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
+            logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
               userId,
               ip: (req as any).ip,
               details: {

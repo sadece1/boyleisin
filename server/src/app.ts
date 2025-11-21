@@ -65,10 +65,6 @@ app.use(helmet({
   xContentTypeOptions: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   permittedCrossDomainPolicies: false,
-  expectCt: {
-    maxAge: 86400,
-    enforce: true,
-  },
 }));
 
 // CORS configuration with enhanced security
@@ -104,7 +100,7 @@ app.use(compression());
 // Body parsing middleware with size limits
 app.use(express.json({ 
   limit: process.env.MAX_JSON_SIZE || '1mb', // Reduced default for security
-  verify: (req, res, buf) => {
+  verify: (req, res: Response, buf) => {
     // Additional JSON validation can be added here
     try {
       JSON.parse(buf.toString());

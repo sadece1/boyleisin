@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as crypto from 'crypto';
 import logger from './logger';
 import fs from 'fs';
 import path from 'path';

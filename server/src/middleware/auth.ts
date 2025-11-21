@@ -4,6 +4,9 @@ import { jwtConfig } from '../config/jwt';
 import { AuthRequest, UserPayload } from '../types';
 import logger from '../utils/logger';
 
+// Export AuthRequest for use in other files
+export type { AuthRequest } from '../types';
+
 /**
  * JWT Authentication Middleware
  */

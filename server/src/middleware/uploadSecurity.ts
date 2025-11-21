@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { uploadConfig } from '../config/upload';
 import { checkDiskSpace } from './upload';
-import { securityLogger, SecurityEventType, getClientIp } from '../utils/securityLogger';
+import { logSecurityEvent, SecurityEventType, getClientIp } from '../utils/securityLogger';
 import logger from '../utils/logger';
 
 /**
@@ -45,7 +45,7 @@ export const checkUploadRateLimit = (
 
   if (count && now < count.resetAt) {
     if (count.count >= MAX_UPLOADS_PER_WINDOW) {
-      securityLogger.logSecurityEvent(SecurityEventType.RATE_LIMIT_EXCEEDED, {
+      logSecurityEvent(SecurityEventType.RATE_LIMIT_EXCEEDED, {
         userId: (req as any).user?.id,
         ip,
         details: {

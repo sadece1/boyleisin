@@ -529,3 +529,4 @@ Deployment sonrası yapılacaklar:
 **Platform:** Hostinger VPS  
 **OS:** Ubuntu 22.04 LTS
 
+

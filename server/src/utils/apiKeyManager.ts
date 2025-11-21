@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { RowDataPacket } from 'mysql2';
 import db from '../config/database';
 import logger from './logger';
-import { securityLogger, SecurityEventType } from './securityLogger';
+import { logSecurityEvent, logAdminAction, SecurityEventType } from './securityLogger';
 
 interface ApiKey {
   id: string;
@@ -73,7 +73,7 @@ export const createApiKey = async (
     expiresAt,
   ]);
 
-  securityLogger.logAdminAction(userId, 'API_KEY_CREATED', id, { name, permissions });
+  logAdminAction(userId, 'API_KEY_CREATED', id, { name, permissions });
 
   return { key, id };
 };
@@ -105,7 +105,7 @@ export const validateApiKey = async (
   const [rows] = await db.execute<RowDataPacket[]>(query, [keyHash]);
 
   if (!rows || rows.length === 0) {
-    securityLogger.logSecurityEvent(SecurityEventType.UNAUTHORIZED_ACCESS, {
+    logSecurityEvent(SecurityEventType.UNAUTHORIZED_ACCESS, {
       details: { reason: 'Invalid API key' },
       severity: 'medium',
     });
@@ -162,7 +162,7 @@ export const revokeApiKey = async (id: string, userId: string): Promise<void> =>
     }
   });
 
-  securityLogger.logAdminAction(userId, 'API_KEY_REVOKED', id);
+  logAdminAction(userId, 'API_KEY_REVOKED', id);
 };
 
 /**
