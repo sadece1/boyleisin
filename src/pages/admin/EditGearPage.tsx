@@ -332,13 +332,20 @@ export const EditGearPage = () => {
             console.error('Failed to load category hierarchy:', error);
           }
         };
-        loadCategoryHierarchy();
+        loadCategoryHierarchy().finally(() => {
+          setIsLoadingCategoryHierarchy(false);
+        });
+      } else {
+        setIsLoadingCategoryHierarchy(false);
       }
     }
   }, [currentGear, reset, setValue]);
 
   // Ana kategori değiştiğinde alt kategorileri güncelle
   useEffect(() => {
+    // Kategori hiyerarşisi yüklenirken state'leri sıfırlama
+    if (isLoadingCategoryHierarchy) return;
+    
     if (selectedParentCategory) {
       const loadSubCategories = async () => {
         const subCats = await categoryManagementService.getChildCategories(selectedParentCategory);
@@ -360,10 +367,13 @@ export const EditGearPage = () => {
         setFinalCategories([]);
       }
     }
-  }, [selectedParentCategory]);
+  }, [selectedParentCategory, isLoadingCategoryHierarchy, currentGear]);
 
   // Alt kategori değiştiğinde final kategorileri güncelle
   useEffect(() => {
+    // Kategori hiyerarşisi yüklenirken state'leri sıfırlama
+    if (isLoadingCategoryHierarchy) return;
+    
     if (selectedSubCategory) {
       const loadFinalCategories = async () => {
         const finalCats = await categoryManagementService.getChildCategories(selectedSubCategory);
@@ -381,7 +391,7 @@ export const EditGearPage = () => {
         setSelectedFinalCategory('');
       }
     }
-  }, [selectedSubCategory]);
+  }, [selectedSubCategory, isLoadingCategoryHierarchy, currentGear]);
 
   // Final kategori seçildiğinde form value'sunu güncelle
   useEffect(() => {
@@ -576,7 +586,7 @@ export const EditGearPage = () => {
       // DOUBLE CHECK: Ensure rating is included
       if (updates.rating === undefined) {
         console.warn('⚠️ Rating is undefined in updates! Adding manually...');
-        updates.rating = finalRating !== undefined ? finalRating : (ratingValue !== undefined ? ratingValue : null);
+        updates.rating = finalRatingValue !== undefined ? finalRatingValue : (ratingValue !== undefined ? ratingValue : null);
         console.log('Added rating manually:', updates.rating);
       }
       
@@ -1069,7 +1079,7 @@ export const EditGearPage = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Teknik Bilgi
               </label>
-              {Array.isArray(specifications) && specifications.map((spec, index) => (
+              {Array.isArray(specificationsState) && specificationsState.map((spec, index) => (
                 <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                   <Input
                     type="text"
