@@ -239,34 +239,76 @@ export const EditGearPage = () => {
       const categoryId = currentGear.categoryId;
       if (categoryId) {
         const loadCategoryHierarchy = async () => {
-          const category = await categoryManagementService.getCategoryById(categoryId);
-          if (category) {
-            // Parent kategoriyi bul
-            let current: Category | null = category;
-            const path: Category[] = [];
-            
-            while (current) {
-              path.unshift(current);
-              if (current.parentId) {
-                current = await categoryManagementService.getCategoryById(current.parentId);
-              } else {
-                break;
+          try {
+            const category = await categoryManagementService.getCategoryById(categoryId);
+            if (category) {
+              // Parent kategoriyi bul
+              let current: Category | null = category;
+              const path: Category[] = [];
+              
+              while (current) {
+                path.unshift(current);
+                if (current.parentId) {
+                  current = await categoryManagementService.getCategoryById(current.parentId);
+                } else {
+                  break;
+                }
+              }
+              
+              console.log('Category hierarchy path:', path.map(c => ({ id: c.id, name: c.name, parentId: c.parentId })));
+              
+              if (path.length > 0) {
+                // Önce tüm alt kategorileri yükle, sonra state'leri set et
+                const rootCategory = path[0];
+                
+                // Ana kategoriyi set et
+                setSelectedParentCategory(rootCategory.id);
+                
+                // Alt kategorileri yükle
+                if (path.length > 1) {
+                  const subCats = await categoryManagementService.getChildCategories(rootCategory.id);
+                  setSubCategories(subCats);
+                  
+                  // Alt kategoriyi set et
+                  const subCategory = path[1];
+                  setSelectedSubCategory(subCategory.id);
+                  
+                  // Final kategorileri yükle
+                  if (path.length > 2) {
+                    const finalCats = await categoryManagementService.getChildCategories(subCategory.id);
+                    setFinalCategories(finalCats);
+                    
+                    // Final kategoriyi set et
+                    const finalCategory = path[2];
+                    setSelectedFinalCategory(finalCategory.id);
+                  } else {
+                    // Eğer final kategori yoksa, alt kategoriyi final olarak kullan
+                    setSelectedFinalCategory('');
+                    setFinalCategories([]);
+                  }
+                } else {
+                  // Eğer alt kategori yoksa, ana kategoriyi kullan
+                  setSelectedSubCategory('');
+                  setSubCategories([]);
+                  setSelectedFinalCategory('');
+                  setFinalCategories([]);
+                }
+                
+                // Form value'larını set et
+                const finalCategory = path[path.length - 1];
+                setValue('categoryId', finalCategory.id, { shouldValidate: false, shouldDirty: false });
+                setValue('category', finalCategory.slug, { shouldValidate: false, shouldDirty: false });
+                setSelectedCategoryName(`${finalCategory.icon || ''} ${finalCategory.name}`);
+                
+                console.log('Category hierarchy loaded:', {
+                  parent: path[0]?.name,
+                  sub: path[1]?.name,
+                  final: path[2]?.name || path[path.length - 1]?.name,
+                });
               }
             }
-            
-            if (path.length > 0) {
-              setSelectedParentCategory(path[0].id);
-              if (path.length > 1) {
-                setSelectedSubCategory(path[1].id);
-                const subCats = await categoryManagementService.getChildCategories(path[0].id);
-                setSubCategories(subCats);
-              }
-              if (path.length > 2) {
-                setSelectedFinalCategory(path[2].id);
-                const finalCats = await categoryManagementService.getChildCategories(path[1].id);
-                setFinalCategories(finalCats);
-              }
-            }
+          } catch (error) {
+            console.error('Failed to load category hierarchy:', error);
           }
         };
         loadCategoryHierarchy();
@@ -280,7 +322,9 @@ export const EditGearPage = () => {
       const loadSubCategories = async () => {
         const subCats = await categoryManagementService.getChildCategories(selectedParentCategory);
         setSubCategories(subCats);
-        if (!selectedSubCategory) {
+        // Eğer mevcut alt kategori yeni ana kategorinin altında değilse, sıfırla
+        if (selectedSubCategory && !subCats.find(c => c.id === selectedSubCategory)) {
+          setSelectedSubCategory('');
           setSelectedFinalCategory('');
           setFinalCategories([]);
         }
@@ -288,11 +332,14 @@ export const EditGearPage = () => {
       loadSubCategories();
     } else {
       setSubCategories([]);
-      setSelectedSubCategory('');
-      setSelectedFinalCategory('');
-      setFinalCategories([]);
+      // Sadece kullanıcı manuel olarak değiştirdiyse sıfırla
+      if (!currentGear?.categoryId) {
+        setSelectedSubCategory('');
+        setSelectedFinalCategory('');
+        setFinalCategories([]);
+      }
     }
-  }, [selectedParentCategory, selectedSubCategory]);
+  }, [selectedParentCategory]);
 
   // Alt kategori değiştiğinde final kategorileri güncelle
   useEffect(() => {
@@ -300,16 +347,20 @@ export const EditGearPage = () => {
       const loadFinalCategories = async () => {
         const finalCats = await categoryManagementService.getChildCategories(selectedSubCategory);
         setFinalCategories(finalCats);
-        if (!selectedFinalCategory) {
+        // Eğer mevcut final kategori yeni alt kategorinin altında değilse, sıfırla
+        if (selectedFinalCategory && !finalCats.find(c => c.id === selectedFinalCategory)) {
           setSelectedFinalCategory('');
         }
       };
       loadFinalCategories();
     } else {
       setFinalCategories([]);
-      setSelectedFinalCategory('');
+      // Sadece kullanıcı manuel olarak değiştirdiyse sıfırla
+      if (!currentGear?.categoryId) {
+        setSelectedFinalCategory('');
+      }
     }
-  }, [selectedSubCategory, selectedFinalCategory]);
+  }, [selectedSubCategory]);
 
   // Final kategori seçildiğinde form value'sunu güncelle
   useEffect(() => {
