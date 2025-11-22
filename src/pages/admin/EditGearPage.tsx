@@ -34,6 +34,7 @@ export const EditGearPage = () => {
   const [specifications, setSpecifications] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }]);
   const [allGear, setAllGear] = useState<Gear[]>([]);
   const [selectedRecommendedProducts, setSelectedRecommendedProducts] = useState<string[]>([]);
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
 
   const {
     register,
@@ -127,7 +128,7 @@ export const EditGearPage = () => {
         name: currentGear.name || '',
         description: currentGear.description || '',
         pricePerDay: currentGear.pricePerDay || 0,
-        deposit: currentGear.deposit,
+        deposit: currentGear.deposit || 0,
         brand: currentGear.brand || '',
         color: currentGear.color || '',
         rating: currentGear.rating,
@@ -138,7 +139,7 @@ export const EditGearPage = () => {
       setValue('name', currentGear.name || '');
       setValue('description', currentGear.description || '');
       setValue('pricePerDay', currentGear.pricePerDay || 0);
-      setValue('deposit', currentGear.deposit);
+      setValue('deposit', currentGear.deposit || 0);
       setValue('brand', currentGear.brand || '');
       setValue('color', currentGear.color || '');
       setValue('rating', currentGear.rating);
