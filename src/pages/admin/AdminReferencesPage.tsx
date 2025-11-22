@@ -96,10 +96,11 @@ export const AdminReferencesPage = () => {
     try {
       setUploadingImage(true);
       const uploaded = await uploadService.uploadImage(newImage);
+      const imageUrl = uploadService.getFileUrl(uploaded.path);
       
       await referenceService.createReference({
         title: newTitle.trim(),
-        image: uploaded.url,
+        image: imageUrl,
         location: newLocation.trim() || null,
         year: newYear.trim() || null,
         description: newDescription.trim() || null,
@@ -144,7 +145,7 @@ export const AdminReferencesPage = () => {
 
       if (editingImageFile) {
         const uploaded = await uploadService.uploadImage(editingImageFile);
-        imageUrl = uploaded.url;
+        imageUrl = uploadService.getFileUrl(uploaded.path);
       }
 
       await referenceService.updateReference(editingId, {
