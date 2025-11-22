@@ -43,6 +43,7 @@ export const EditGearPage = () => {
     reset,
     setValue,
     watch,
+    getValues,
   } = useForm<Partial<Gear>>();
 
   const ratingValue = watch('rating');
@@ -398,6 +399,17 @@ export const EditGearPage = () => {
 
     setIsSubmitting(true);
     try {
+      // Get all form values using getValues() as fallback
+      const allFormValues = getValues();
+      console.log('=== FORM SUBMIT DEBUG ===');
+      console.log('handleSubmit data:', data);
+      console.log('getValues() all values:', allFormValues);
+      console.log('watch() rating:', watch('rating'));
+      console.log('watch() all:', watch());
+      
+      // Use getValues if data is empty
+      const formData = Object.keys(data).length > 0 ? data : allFormValues;
+      console.log('Using formData:', formData);
       // Son seçilen kategoriyi belirle
       let finalCategoryId = selectedFinalCategory || selectedSubCategory || selectedParentCategory;
       let finalCategorySlug = '';
@@ -444,13 +456,19 @@ export const EditGearPage = () => {
         }
       });
       
-      // Extract and validate form values
-      const pricePerDay = typeof data.pricePerDay === 'number' && !isNaN(data.pricePerDay) ? data.pricePerDay : (data.pricePerDay ? Number(data.pricePerDay) : 0);
-      const deposit = data.deposit !== undefined && data.deposit !== null && !isNaN(Number(data.deposit)) ? Number(data.deposit) : null;
+      // Extract and validate form values - use formData instead of data
+      const pricePerDay = typeof formData.pricePerDay === 'number' && !isNaN(formData.pricePerDay) ? formData.pricePerDay : (formData.pricePerDay ? Number(formData.pricePerDay) : 0);
+      const deposit = formData.deposit !== undefined && formData.deposit !== null && !isNaN(Number(formData.deposit)) ? Number(formData.deposit) : null;
       // Rating can be 0-5, or null/undefined
-      // Get rating from form data or watch value
-      const formRating = data.rating !== undefined ? data.rating : ratingValue;
-      console.log('Rating sources:', { formData: data.rating, watchValue: ratingValue, formRating });
+      // Get rating from form data, watch value, or getValues
+      const formRating = formData.rating !== undefined ? formData.rating : (ratingValue !== undefined ? ratingValue : allFormValues.rating);
+      console.log('Rating sources:', { 
+        handleSubmitData: data.rating, 
+        formDataRating: formData.rating,
+        watchValue: ratingValue, 
+        getValuesRating: allFormValues.rating,
+        finalRating: formRating 
+      });
       
       const rating = formRating !== undefined && formRating !== null && formRating !== '' 
         ? (typeof formRating === 'number' ? formRating : Number(formRating))
@@ -458,25 +476,27 @@ export const EditGearPage = () => {
       // If rating is NaN, set to null
       const finalRating = (rating !== undefined && rating !== null && !isNaN(rating)) ? rating : null;
       
-      console.log('Form data received:', data);
-      console.log('Form data.rating:', data.rating, typeof data.rating);
-      console.log('Extracted values:', { pricePerDay, deposit, rating });
+      console.log('Form data received (handleSubmit):', data);
+      console.log('Form data received (getValues):', allFormValues);
+      console.log('Using formData:', formData);
+      console.log('Form data.rating:', formData.rating, typeof formData.rating);
+      console.log('Extracted values:', { pricePerDay, deposit, rating: formRating });
       console.log('Final rating value:', finalRating);
       
-      // Ensure all values are explicitly set, not undefined
+      // Ensure all values are explicitly set, not undefined - use formData
       const updates: Partial<Gear> = {
-        name: data.name || '',
-        description: data.description || '',
-        category: finalCategorySlug || data.category || 'other',
+        name: formData.name || data.name || '',
+        description: formData.description || data.description || '',
+        category: finalCategorySlug || formData.category || data.category || 'other',
         categoryId: finalCategoryId || currentGear.categoryId, // Keep existing if not provided
         images: validImages,
         pricePerDay: pricePerDay,
         deposit: deposit !== null ? deposit : null, // Explicitly set null
-        available: data.status === 'for-sale' || data.status === 'orderable' ? true : false,
-        status: data.status ?? 'for-sale',
+        available: (formData.status || data.status) === 'for-sale' || (formData.status || data.status) === 'orderable' ? true : false,
+        status: (formData.status || data.status) ?? 'for-sale',
         specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : (currentGear.specifications || {}), // Keep existing or empty object
-        brand: data.brand || '',
-        color: data.color || '',
+        brand: formData.brand || data.brand || '',
+        color: formData.color || data.color || '',
         rating: finalRating !== undefined ? finalRating : (currentGear.rating !== undefined ? currentGear.rating : null), // Explicitly set, keep existing or null
         recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : (currentGear.recommendedProducts || []),
       };
