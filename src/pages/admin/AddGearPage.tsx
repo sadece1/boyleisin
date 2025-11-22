@@ -257,22 +257,28 @@ export const AddGearPage = () => {
       console.log('Extracted values:', { pricePerDay, deposit, rating });
       console.log('Final rating value:', finalRating);
       
+      // Ensure all values are explicitly set
       const gearData: Omit<Gear, 'id' | 'createdAt' | 'updatedAt'> = {
         name: data.name || '',
         description: data.description || '',
         category: finalCategorySlug || data.category || 'other',
-        categoryId: finalCategoryId,
+        categoryId: finalCategoryId || '',
         images: validImages,
         pricePerDay: pricePerDay,
-        deposit: deposit,
-        available: data.status === 'for-sale' || data.status === 'orderable' ? true : false, // Backward compatibility
+        deposit: deposit !== null ? deposit : null, // Explicitly set null
+        available: data.status === 'for-sale' || data.status === 'orderable' ? true : false,
         status: data.status ?? 'for-sale',
-        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : undefined,
+        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : {}, // Always send object, even if empty
         brand: data.brand || '',
         color: data.color || '',
-        rating: finalRating,
-        recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : undefined,
+        rating: finalRating !== undefined ? finalRating : null, // Explicitly set, null if not provided
+        recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : [],
       };
+      
+      console.log('Final gearData object:', gearData);
+      console.log('gearData.rating:', gearData.rating, typeof gearData.rating);
+      console.log('gearData.specifications:', gearData.specifications);
+      console.log('gearData.categoryId:', gearData.categoryId);
       
       console.log('Gear data to send:', gearData);
 
