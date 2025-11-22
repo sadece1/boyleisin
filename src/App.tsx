@@ -53,6 +53,7 @@ const AdminReferencesPage = lazy(() => import('@/pages/admin/AdminReferencesPage
 const AdminColorsPage = lazy(() => import('@/pages/admin/AdminColorsPage').then(m => ({ default: m.AdminColorsPage })));
 const AdminChangePasswordPage = lazy(() => import('@/pages/admin/AdminChangePasswordPage').then(m => ({ default: m.AdminChangePasswordPage })));
 const AdminUserOrdersPage = lazy(() => import('@/pages/admin/AdminUserOrdersPage').then(m => ({ default: m.AdminUserOrdersPage })));
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -289,6 +290,14 @@ function AppContent() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminUserOrdersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={routes.adminUsers}
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminUsersPage />
                     </ProtectedRoute>
                   }
                 />

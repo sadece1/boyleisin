@@ -52,5 +52,6 @@ export const routes = {
   adminChangePassword: '/admin/change-password',
   adminUserOrders: '/admin/user-orders',
   adminReferences: '/admin/references',
+  adminUsers: '/admin/users',
 } as const;
 

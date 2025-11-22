@@ -131,9 +131,13 @@ export const authService = {
 
   async getAllUsers(): Promise<User[]> {
     try {
-      const response = await api.get<User[]>('/admin/users');
-      return response.data;
+      const response = await api.get<{ success: boolean; data: any[]; pagination?: any }>('/admin/users');
+      if (response.data.success && response.data.data) {
+        return response.data.data.map((u: any) => transformUser(u));
+      }
+      return [];
     } catch (error) {
+      console.error('Failed to fetch users:', error);
       // Fallback: return mock users without passwords
       return mockUsers.map(({ password, ...user }) => user as User);
     }
