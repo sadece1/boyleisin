@@ -541,7 +541,7 @@ export const EditCategoryPage = () => {
                   <div>
                     <Input
                       label="İkon (Emoji)"
-                      {...register('icon')}
+                      {...register('icon', { required: false })}
                       placeholder="🏕️"
                       maxLength={2}
                     />

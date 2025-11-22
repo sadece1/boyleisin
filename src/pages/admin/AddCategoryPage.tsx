@@ -274,9 +274,9 @@ export const AddCategoryPage = () => {
             </div>
 
             <Input
-              label="İkon (emoji)"
+              label="İkon (emoji) - Opsiyonel"
               {...register('icon')}
-              placeholder="🏕️"
+              placeholder="🏕️ (boş bırakılabilir)"
             />
 
             <Input
