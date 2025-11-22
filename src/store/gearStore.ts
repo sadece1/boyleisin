@@ -72,28 +72,74 @@ export const useGearStore = create<GearState>((set, get) => ({
   addGear: async (gearData) => {
     set({ isLoading: true, error: null });
     try {
+      // Validate description length
+      if (!gearData.description || gearData.description.trim().length < 20) {
+        throw new Error('Açıklama en az 20 karakter olmalıdır');
+      }
+
+      // Get backend category UUID from frontend category
+      let backendCategoryId: string | null = null;
+      if (gearData.categoryId) {
+        try {
+          // Fetch backend categories to find UUID
+          const response = await fetch('/api/categories');
+          const backendCategoriesResponse = await response.json();
+          if (backendCategoriesResponse.success && backendCategoriesResponse.data) {
+            const backendCategories = backendCategoriesResponse.data;
+            // Get frontend category to find matching backend category
+            const frontendCategory = categoryManagementService.getCategoryById(gearData.categoryId);
+            if (frontendCategory) {
+              // Try to match by slug or name
+              const matchingBackendCategory = backendCategories.find((bc: any) => {
+                const backendSlug = (bc.slug || '').toLowerCase().trim();
+                const backendName = (bc.name || '').toLowerCase().trim();
+                const frontendSlug = (frontendCategory.slug || '').toLowerCase().trim();
+                const frontendName = (frontendCategory.name || '').toLowerCase().trim();
+                return backendSlug === frontendSlug || backendName === frontendName ||
+                       backendSlug.includes(frontendSlug) || frontendSlug.includes(backendSlug) ||
+                       backendName.includes(frontendName) || frontendName.includes(backendName);
+              });
+              if (matchingBackendCategory) {
+                backendCategoryId = matchingBackendCategory.id;
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to fetch backend categories:', error);
+        }
+      }
+
+      if (!backendCategoryId) {
+        throw new Error('Geçerli bir kategori seçin. Kategori backend\'de bulunamadı.');
+      }
+
       // Create FormData for service compatibility
       const formData = new FormData();
       formData.append('name', gearData.name);
-      formData.append('description', gearData.description || '');
+      formData.append('description', gearData.description.trim());
       formData.append('category', String(gearData.category));
-      // Backend expects category_id (UUID format)
-      if (gearData.categoryId) {
-        formData.append('category_id', gearData.categoryId);
-      }
+      formData.append('category_id', backendCategoryId);
       formData.append('price_per_day', String(gearData.pricePerDay));
       if (gearData.deposit !== undefined) {
         formData.append('deposit', String(gearData.deposit));
       }
       formData.append('available', String(gearData.available ?? true));
-      // Backend expects status field
       formData.append('status', gearData.status || 'for-sale');
       
-      // Add images as URLs (service will handle them)
+      // Add images as URLs - ensure they are valid URIs
       if (gearData.images && gearData.images.length > 0) {
         gearData.images.forEach((url, index) => {
           if (url && url.trim() !== '') {
-            formData.append(`image_${index}`, url);
+            // Convert relative URLs to absolute URLs
+            let imageUrl = url.trim();
+            if (imageUrl.startsWith('/')) {
+              // Relative path - make it absolute
+              imageUrl = `${window.location.origin}${imageUrl}`;
+            } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+              // Assume it's a relative path from uploads
+              imageUrl = `${window.location.origin}/api${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+            }
+            formData.append(`image_${index}`, imageUrl);
           }
         });
       }
