@@ -75,7 +75,9 @@ export const useGearStore = create<GearState>((set, get) => ({
     try {
       // Validate description length
       if (!gearData.description || gearData.description.trim().length < 20) {
-        throw new Error('Açıklama en az 20 karakter olmalıdır');
+        alert('⚠️ Açıklama en az 20 karakter olmalıdır');
+        set({ isLoading: false });
+        return;
       }
 
       // Get backend category UUID from frontend category
@@ -90,28 +92,59 @@ export const useGearStore = create<GearState>((set, get) => ({
             // Get frontend category to find matching backend category
             const frontendCategory = categoryManagementService.getCategoryById(gearData.categoryId);
             if (frontendCategory) {
-              // Try to match by slug or name
+              // Try multiple matching strategies
               const matchingBackendCategory = backendCategories.find((bc: any) => {
                 const backendSlug = (bc.slug || '').toLowerCase().trim();
                 const backendName = (bc.name || '').toLowerCase().trim();
                 const frontendSlug = (frontendCategory.slug || '').toLowerCase().trim();
                 const frontendName = (frontendCategory.name || '').toLowerCase().trim();
-                return backendSlug === frontendSlug || backendName === frontendName ||
-                       backendSlug.includes(frontendSlug) || frontendSlug.includes(backendSlug) ||
-                       backendName.includes(frontendName) || frontendName.includes(backendName);
+                
+                // Exact match
+                if (backendSlug === frontendSlug || backendName === frontendName) {
+                  return true;
+                }
+                
+                // Partial match - check if any word matches
+                const backendWords = backendName.split(/\s+/);
+                const frontendWords = frontendName.split(/\s+/);
+                const hasMatchingWord = backendWords.some(bw => 
+                  frontendWords.some(fw => fw.includes(bw) || bw.includes(fw))
+                );
+                if (hasMatchingWord) {
+                  return true;
+                }
+                
+                // Slug contains match
+                if (backendSlug.includes(frontendSlug) || frontendSlug.includes(backendSlug)) {
+                  return true;
+                }
+                
+                return false;
               });
+              
               if (matchingBackendCategory) {
                 backendCategoryId = matchingBackendCategory.id;
+              } else {
+                // If no match found, try to use first backend category as fallback
+                console.warn('Category not matched, using first backend category as fallback');
+                if (backendCategories.length > 0) {
+                  backendCategoryId = backendCategories[0].id;
+                }
               }
             }
           }
         } catch (error) {
           console.warn('Failed to fetch backend categories:', error);
+          alert('⚠️ Kategoriler yüklenemedi. Lütfen sayfayı yenileyip tekrar deneyin.');
+          set({ isLoading: false });
+          return;
         }
       }
 
       if (!backendCategoryId) {
-        throw new Error('Geçerli bir kategori seçin. Kategori backend\'de bulunamadı.');
+        alert('⚠️ Geçerli bir kategori seçin. Kategori backend\'de bulunamadı.');
+        set({ isLoading: false });
+        return;
       }
 
       // Create FormData for service compatibility

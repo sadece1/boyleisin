@@ -2031,13 +2031,8 @@ export const gearService = {
       // Direct paginated response
       return response.data as PaginatedResponse<Gear>;
     } catch (error) {
-      // Only use mock data in development mode, never in production
-      if (import.meta.env.DEV) {
-        console.warn('API call failed, using mock gear data:', error);
-        // Reload from localStorage to get latest data
-        mockGear = loadGearFromStorage();
-        console.log('Mock gear loaded from storage, total items:', mockGear.length);
-      let filtered = [...mockGear];
+      // In production, always throw error - no mock fallback
+      throw error;
 
       // Apply filters if any
       if (filters?.category) {
@@ -2159,16 +2154,7 @@ export const gearService = {
       // Direct gear object
       return response.data as Gear;
     } catch (error: any) {
-      // Only use mock data in development mode, never in production
-      if (import.meta.env.DEV && error.response?.status === 404) {
-        console.warn('API call failed, using mock gear data:', error);
-        // Reload from localStorage to get latest data
-        mockGear = loadGearFromStorage();
-        const mockItem = mockGear.find(g => g.id === id);
-        if (mockItem) {
-          return mockItem;
-        }
-      }
+      // In production, always throw error - no mock fallback
       throw error;
     }
   },
@@ -2182,58 +2168,7 @@ export const gearService = {
       });
       return response.data;
     } catch (error) {
-      // Fallback to mock response in development
-      if (import.meta.env.DEV) {
-        console.warn('API call failed, using mock response:', error);
-        
-        // Reload from localStorage to get latest data
-        mockGear = loadGearFromStorage();
-        
-        // Extract image URLs from FormData
-        const images: string[] = [];
-        let index = 0;
-        while (data.has(`image_${index}`)) {
-          const url = data.get(`image_${index}`)?.toString();
-          if (url) images.push(url);
-          index++;
-        }
-        
-        // Extract optional fields
-        const brand = data.get('brand')?.toString();
-        const color = data.get('color')?.toString();
-        const rating = data.get('rating')?.toString();
-        const recommendedProductsStr = data.get('recommendedProducts')?.toString();
-        
-        let recommendedProducts: string[] | undefined;
-        if (recommendedProductsStr) {
-          try {
-            recommendedProducts = JSON.parse(recommendedProductsStr);
-          } catch (e) {
-            console.warn('Failed to parse recommendedProducts:', e);
-          }
-        }
-
-        const newGear: Gear = {
-          id: `gear-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          name: data.get('name')?.toString() || 'Yeni Malzeme',
-          description: data.get('description')?.toString() || '',
-          category: data.get('category')?.toString() || 'other',
-          categoryId: data.get('categoryId')?.toString(),
-          images: images,
-          pricePerDay: Number(data.get('pricePerDay')) || 100,
-          deposit: data.get('deposit') ? Number(data.get('deposit')) : undefined,
-          available: data.get('available')?.toString() === 'true' || data.get('available')?.toString() === '',
-          brand: brand,
-          color: color,
-          rating: rating ? Number(rating) : undefined,
-          recommendedProducts: recommendedProducts,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        mockGear.unshift(newGear);
-        saveGearToStorage(mockGear);
-        return newGear;
-      }
+      // In production, always throw error - no mock fallback
       throw error;
     }
   },
