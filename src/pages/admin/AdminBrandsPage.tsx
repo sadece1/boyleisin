@@ -80,7 +80,7 @@ export const AdminBrandsPage = () => {
 
       if (newBrandLogo) {
         const uploaded = await uploadService.uploadImage(newBrandLogo);
-        logoUrl = uploaded.url;
+        logoUrl = uploadService.getFileUrl(uploaded.path);
       }
 
       await brandService.createBrand({ name: newBrandName, logo: logoUrl });
@@ -116,7 +116,7 @@ export const AdminBrandsPage = () => {
 
       if (editingLogoFile) {
         const uploaded = await uploadService.uploadImage(editingLogoFile);
-        logoUrl = uploaded.url;
+        logoUrl = uploadService.getFileUrl(uploaded.path);
       }
 
       await brandService.updateBrand(editingId, { name: editingName, logo: logoUrl });

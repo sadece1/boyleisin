@@ -6,15 +6,25 @@ import { AdminLayout } from '@/components/AdminLayout';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { referenceService, Reference } from '@/services/referenceService';
+import { brandService, Brand } from '@/services/brandService';
 import { uploadService } from '@/services/uploadService';
 import { routes } from '@/config';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const AdminReferencesPage = () => {
+  const [activeTab, setActiveTab] = useState<'references' | 'brands'>('references');
+  
+  // References state
   const [references, setReferences] = useState<Reference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Brands state
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+  const [isAddingBrand, setIsAddingBrand] = useState(false);
+  const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
   
   // Add form state
   const [newTitle, setNewTitle] = useState('');
@@ -33,9 +43,20 @@ export const AdminReferencesPage = () => {
   const [editingLocation, setEditingLocation] = useState('');
   const [editingYear, setEditingYear] = useState('');
   const [editingDescription, setEditingDescription] = useState('');
+  
+  // Brand form state
+  const [newBrandName, setNewBrandName] = useState('');
+  const [newBrandLogo, setNewBrandLogo] = useState<File | null>(null);
+  const [newBrandLogoPreview, setNewBrandLogoPreview] = useState<string>('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [editingBrandName, setEditingBrandName] = useState('');
+  const [editingBrandLogo, setEditingBrandLogo] = useState<string | null>(null);
+  const [editingBrandLogoFile, setEditingBrandLogoFile] = useState<File | null>(null);
+  const [editingBrandLogoPreview, setEditingBrandLogoPreview] = useState<string>('');
 
   useEffect(() => {
     loadReferences();
+    loadBrands();
   }, []);
 
   const loadReferences = async () => {
@@ -48,6 +69,19 @@ export const AdminReferencesPage = () => {
       alert('Referanslar yüklenemedi');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadBrands = async () => {
+    setIsLoadingBrands(true);
+    try {
+      const allBrands = await brandService.getAllBrands();
+      setBrands(allBrands);
+    } catch (error) {
+      console.error('Failed to load brands:', error);
+      alert('Markalar yüklenemedi');
+    } finally {
+      setIsLoadingBrands(false);
     }
   };
 
@@ -195,27 +229,179 @@ export const AdminReferencesPage = () => {
     }
   };
 
+  // Brand handlers
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>, isEditing: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Logo dosyası 5MB\'dan büyük olamaz');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Lütfen bir resim dosyası seçin');
+      return;
+    }
+
+    if (isEditing) {
+      setEditingBrandLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingBrandLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewBrandLogo(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewBrandLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddBrand = async () => {
+    if (!newBrandName.trim()) {
+      alert('Lütfen marka adı girin');
+      return;
+    }
+
+    try {
+      setUploadingLogo(true);
+      let logoUrl: string | null = null;
+
+      if (newBrandLogo) {
+        const uploaded = await uploadService.uploadImage(newBrandLogo);
+        logoUrl = uploadService.getFileUrl(uploaded.path);
+      }
+
+      await brandService.createBrand({ name: newBrandName, logo: logoUrl });
+      setNewBrandName('');
+      setNewBrandLogo(null);
+      setNewBrandLogoPreview('');
+      setIsAddingBrand(false);
+      await loadBrands();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Marka eklenemedi');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleEditBrand = (brand: Brand) => {
+    setEditingBrandId(brand.id);
+    setEditingBrandName(brand.name);
+    setEditingBrandLogo(brand.logo || null);
+    setEditingBrandLogoFile(null);
+    setEditingBrandLogoPreview(brand.logo || '');
+  };
+
+  const handleSaveBrandEdit = async () => {
+    if (!editingBrandId || !editingBrandName.trim()) {
+      alert('Lütfen marka adı girin');
+      return;
+    }
+
+    try {
+      setUploadingLogo(true);
+      let logoUrl: string | null = editingBrandLogo;
+
+      if (editingBrandLogoFile) {
+        const uploaded = await uploadService.uploadImage(editingBrandLogoFile);
+        logoUrl = uploadService.getFileUrl(uploaded.path);
+      }
+
+      await brandService.updateBrand(editingBrandId, { name: editingBrandName, logo: logoUrl });
+      setEditingBrandId(null);
+      setEditingBrandName('');
+      setEditingBrandLogo(null);
+      setEditingBrandLogoFile(null);
+      setEditingBrandLogoPreview('');
+      await loadBrands();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Marka güncellenemedi');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleCancelBrandEdit = () => {
+    setEditingBrandId(null);
+    setEditingBrandName('');
+    setEditingBrandLogo(null);
+    setEditingBrandLogoFile(null);
+    setEditingBrandLogoPreview('');
+  };
+
+  const handleDeleteBrand = async (id: string) => {
+    if (window.confirm('Bu markayı silmek istediğinizden emin misiniz?')) {
+      try {
+        await brandService.deleteBrand(id);
+        await loadBrands();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Silme işlemi başarısız oldu');
+      }
+    }
+  };
+
   return (
     <>
       <SEO title="Referans Yönetimi" description="Referansları yönetin" />
       <AdminLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                Referans Yönetimi
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
-                {references.length} referans yönetiliyor
-              </p>
-            </div>
-            {!isAdding && (
-              <Button variant="primary" onClick={() => setIsAdding(true)} className="w-full sm:w-auto">
-                + Yeni Referans Ekle
-              </Button>
-            )}
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+              Referans ve Marka Yönetimi
+            </h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
+              Referanslar ve markaları yönetin
+            </p>
           </div>
+
+          {/* Tabs */}
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex space-x-4">
+              <button
+                onClick={() => setActiveTab('references')}
+                className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                  activeTab === 'references'
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Referanslar ({references.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('brands')}
+                className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                  activeTab === 'brands'
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Markalar ({brands.length})
+              </button>
+            </nav>
+          </div>
+
+          {/* References Tab */}
+          {activeTab === 'references' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                    Referanslar
+                  </h2>
+                </div>
+                {!isAdding && (
+                  <Button variant="primary" onClick={() => setIsAdding(true)} className="w-full sm:w-auto">
+                    + Yeni Referans Ekle
+                  </Button>
+                )}
+              </div>
 
           {/* Add Form */}
           {isAdding && (
@@ -448,6 +634,201 @@ export const AdminReferencesPage = () => {
               <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">
                 Henüz referans eklenmemiş
               </p>
+            </div>
+          )}
+          </div>
+          )}
+
+          {/* Brands Tab */}
+          {activeTab === 'brands' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                    Markalar
+                  </h2>
+                </div>
+                {!isAddingBrand && (
+                  <Button variant="primary" onClick={() => setIsAddingBrand(true)} className="w-full sm:w-auto">
+                    + Yeni Marka Ekle
+                  </Button>
+                )}
+              </div>
+
+              {/* Add Brand Form */}
+              {isAddingBrand && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Yeni Marka Ekle
+                  </h2>
+                  <div className="space-y-4">
+                    <Input
+                      label="Marka Adı *"
+                      value={newBrandName}
+                      onChange={(e) => setNewBrandName(e.target.value)}
+                      placeholder="Örn: Orgaz"
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Logo <span className="text-xs text-gray-500">(Max 5MB, Yuvarlak görünecek)</span>
+                      </label>
+                      <div className="space-y-2">
+                        {newBrandLogoPreview && (
+                          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 dark:border-gray-600">
+                            <img
+                              src={newBrandLogoPreview}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleLogoSelect(e, false)}
+                          className="block w-full text-sm text-gray-500 dark:text-gray-400
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-primary-50 file:text-primary-700
+                            hover:file:bg-primary-100
+                            dark:file:bg-primary-900 dark:file:text-primary-300"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="primary" onClick={handleAddBrand} disabled={uploadingLogo} className="flex-1 sm:flex-initial">
+                        {uploadingLogo ? 'Yükleniyor...' : 'Kaydet'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsAddingBrand(false);
+                          setNewBrandName('');
+                          setNewBrandLogo(null);
+                          setNewBrandLogoPreview('');
+                        }}
+                        className="flex-1 sm:flex-initial"
+                      >
+                        İptal
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Brands List */}
+              {isLoadingBrands ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : brands.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                  {brands.map((brand) => (
+                    <motion.div
+                      key={brand.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md overflow-hidden"
+                    >
+                      {editingBrandId === brand.id ? (
+                        <div className="p-4 space-y-4">
+                          <Input
+                            label="Marka Adı *"
+                            value={editingBrandName}
+                            onChange={(e) => setEditingBrandName(e.target.value)}
+                          />
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Logo
+                            </label>
+                            <div className="space-y-2">
+                              {editingBrandLogoPreview && (
+                                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 mx-auto">
+                                  <img
+                                    src={editingBrandLogoPreview}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleLogoSelect(e, true)}
+                                className="block w-full text-sm text-gray-500 dark:text-gray-400
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-lg file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-primary-50 file:text-primary-700
+                                  hover:file:bg-primary-100
+                                  dark:file:bg-primary-900 dark:file:text-primary-300"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="primary" size="sm" onClick={handleSaveBrandEdit} disabled={uploadingLogo} className="flex-1">
+                              {uploadingLogo ? 'Yükleniyor...' : 'Kaydet'}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handleCancelBrandEdit} className="flex-1">
+                              İptal
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="relative aspect-square p-4">
+                            {brand.logo ? (
+                              <div className="w-full h-full rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700">
+                                <img
+                                  src={brand.logo}
+                                  alt={brand.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <span className="text-2xl">🏷️</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-4 text-center">
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                              {brand.name}
+                            </h3>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditBrand(brand)}
+                                className="flex-1 text-xs"
+                              >
+                                ✏️
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleDeleteBrand(brand.id)}
+                                className="flex-1 text-xs"
+                              >
+                                🗑️
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md p-8 sm:p-12 text-center">
+                  <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🏷️</div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">
+                    Henüz marka eklenmemiş
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
