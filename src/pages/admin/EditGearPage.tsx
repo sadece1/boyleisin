@@ -519,12 +519,20 @@ export const EditGearPage = () => {
       console.log('✅ Current gear rating:', currentGear.rating);
       console.log('✅ Final rating value:', finalRatingValue);
       
-      // Specifications: Eğer state'de değer yoksa, mevcut değerleri koru
-      const finalSpecifications = Object.keys(specificationsObj).length > 0 
+      // Specifications: Eğer state'de değer yoksa veya sadece boş alanlar varsa, mevcut değerleri koru
+      const hasValidSpecs = specificationsState.some(spec => spec.key.trim() && spec.value.trim());
+      const finalSpecifications = hasValidSpecs
         ? specificationsObj 
         : (currentGear.specifications && Object.keys(currentGear.specifications).length > 0 
           ? currentGear.specifications 
           : {});
+      console.log('✅ Specifications check:', {
+        hasValidSpecs,
+        specificationsStateLength: specificationsState.length,
+        specificationsObjKeys: Object.keys(specificationsObj).length,
+        currentGearSpecsKeys: currentGear.specifications ? Object.keys(currentGear.specifications).length : 0,
+        finalSpecs: finalSpecifications
+      });
       
       // Category: Eğer seçim yapılmamışsa, mevcut kategoriyi koru
       const finalCategoryIdValue = (selectedFinalCategory || selectedSubCategory || selectedParentCategory) 
