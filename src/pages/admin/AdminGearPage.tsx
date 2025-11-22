@@ -26,7 +26,7 @@ export const AdminGearPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
-    fetchGear({}, 1, 10000);
+    fetchGear({}, 1, 500); // Reasonable limit for admin page
     const allCategories = categoryManagementService.getAllCategories();
     setCategories(allCategories);
     

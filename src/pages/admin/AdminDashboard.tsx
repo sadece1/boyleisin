@@ -22,8 +22,8 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     fetchCampsites({}, 1);
-    // Dashboard için tüm ürünleri çekmek için büyük bir limit kullan
-    fetchGear({}, 1, 10000);
+    // Dashboard için tüm ürünleri çekmek için makul bir limit kullan
+    fetchGear({}, 1, 100);
     fetchBlogs({}, 1);
     fetchMessages(1);
     fetchSubscriptions(1);

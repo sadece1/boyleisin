@@ -60,7 +60,7 @@ export const EditGearPage = () => {
     // Load all gear for recommended products selection
     const loadAllGear = async () => {
       try {
-        const response = await gearService.getGear({}, 1, 1000); // Get all gear
+        const response = await gearService.getGear({}, 1, 200); // Get gear for recommendations
         setAllGear(response.data);
       } catch (error) {
         console.error('Failed to load gear for recommendations:', error);
