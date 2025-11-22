@@ -410,7 +410,7 @@ export const EditGearPage = () => {
             Ürün Düzenle
           </h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-hidden">
             <Input
               label="Ürün Adı"
               {...register('name', { required: 'Ürün adı gereklidir' })}
@@ -424,11 +424,12 @@ export const EditGearPage = () => {
               <textarea
                 {...register('description', { required: 'Açıklama gereklidir' })}
                 rows={5}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                className={`w-full max-w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 overflow-wrap-break-word break-words ${
                   errors.description
                     ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 dark:border-gray-600'
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+                style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description.message}</p>
