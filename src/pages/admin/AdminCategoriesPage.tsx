@@ -70,23 +70,34 @@ export const AdminCategoriesPage = () => {
     try {
       const result = await syncCategoriesToBackend();
       
-      if (result.success) {
-        alert(
-          `✅ Senkronizasyon tamamlandı!\n\n` +
-          `Oluşturulan: ${result.created}\n` +
-          `Zaten mevcut: ${result.skipped}\n` +
-          `Hatalar: ${result.errors.length}`
-        );
-        
-        if (result.errors.length > 0) {
+      // Show result message based on what happened
+      if (result.created > 0 || result.skipped > 0) {
+        // At least some categories were processed
+        if (result.errors.length === 0) {
+          alert(
+            `✅ Senkronizasyon başarıyla tamamlandı!\n\n` +
+            `Oluşturulan: ${result.created}\n` +
+            `Zaten mevcut: ${result.skipped}`
+          );
+        } else {
+          alert(
+            `⚠️ Senkronizasyon kısmen tamamlandı:\n\n` +
+            `✅ Oluşturulan: ${result.created}\n` +
+            `⏭️  Zaten mevcut: ${result.skipped}\n` +
+            `❌ Hatalar: ${result.errors.length}\n\n` +
+            `Bazı kategoriler oluşturulamadı, ancak işlem devam etti.\n` +
+            `Detaylar için console'u kontrol edin.`
+          );
           console.error('Sync errors:', result.errors);
         }
       } else {
+        // Nothing was created or skipped
         alert(
-          `⚠️ Senkronizasyon sırasında hatalar oluştu:\n\n` +
+          `❌ Senkronizasyon başarısız oldu:\n\n` +
           `Oluşturulan: ${result.created}\n` +
           `Zaten mevcut: ${result.skipped}\n` +
           `Hatalar: ${result.errors.length}\n\n` +
+          `Hiçbir kategori oluşturulamadı.\n` +
           `Detaylar için console'u kontrol edin.`
         );
         console.error('Sync errors:', result.errors);

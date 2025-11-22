@@ -85,7 +85,8 @@ export async function syncCategoriesToBackend(): Promise<{
           const errorMsg = `Failed to create "${frontendCat.name}": ${error.response?.data?.message || error.message}`;
           console.error(`❌ ${errorMsg}`);
           result.errors.push(errorMsg);
-          result.success = false;
+          // Don't set success = false here, continue with other categories
+          // result.success = false;
         }
       }
     }
@@ -142,7 +143,8 @@ export async function syncCategoriesToBackend(): Promise<{
             const errorMsg = `Failed to create "${frontendCat.name}": ${error.response?.data?.message || error.message}`;
             console.error(`❌ ${errorMsg}`);
             result.errors.push(errorMsg);
-            result.success = false;
+            // Don't set success = false here, continue with other categories
+            // result.success = false;
             processedInThisIteration.push(frontendCat.id); // Mark as processed to avoid infinite loop
           }
         }
@@ -169,12 +171,23 @@ export async function syncCategoriesToBackend(): Promise<{
     console.log(`   ⏭️  Skipped: ${result.skipped}`);
     console.log(`   ❌ Errors: ${result.errors.length}`);
 
+    // Only mark as unsuccessful if no categories were created and there were errors
+    if (result.created === 0 && result.errors.length > 0) {
+      result.success = false;
+    } else if (result.errors.length > 0) {
+      // Some categories were created but there were errors - partial success
+      result.success = true;
+    }
+
     return result;
   } catch (error: any) {
     const errorMsg = `Sync failed: ${error.message}`;
     console.error(`❌ ${errorMsg}`);
     result.errors.push(errorMsg);
-    result.success = false;
+    // Only mark as unsuccessful if nothing was created
+    if (result.created === 0) {
+      result.success = false;
+    }
     return result;
   }
 }
