@@ -451,7 +451,15 @@ export const EditGearPage = () => {
         name: nameInput?.value || allFormValues.name || watchedValues.name || data.name || '',
         description: descriptionInput?.value || allFormValues.description || watchedValues.description || data.description || '',
         pricePerDay: priceInput?.value || allFormValues.pricePerDay || watchedValues.pricePerDay || data.pricePerDay || 0,
-        deposit: depositInput?.value || allFormValues.deposit || watchedValues.deposit || data.deposit || null,
+        deposit: depositInput?.value 
+          ? (depositInput.value.trim() === '' ? null : (isNaN(Number(depositInput.value)) ? null : Number(depositInput.value)))
+          : (allFormValues.deposit !== undefined && allFormValues.deposit !== null && !isNaN(Number(allFormValues.deposit))
+            ? Number(allFormValues.deposit)
+            : (watchedValues.deposit !== undefined && watchedValues.deposit !== null && !isNaN(Number(watchedValues.deposit))
+              ? Number(watchedValues.deposit)
+              : (data.deposit !== undefined && data.deposit !== null && !isNaN(Number(data.deposit))
+                ? Number(data.deposit)
+                : null))),
         brand: brandInput?.value || allFormValues.brand || watchedValues.brand || data.brand || '',
         color: colorInput?.value || allFormValues.color || watchedValues.color || data.color || '',
         rating: ratingInput?.value || allFormValues.rating || watchedValues.rating || ratingValue || data.rating || null,
