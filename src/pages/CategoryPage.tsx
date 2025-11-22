@@ -150,6 +150,14 @@ export const CategoryPage = () => {
             }
             if (cat.name) {
               matchingNames.add(cat.name.toLowerCase().trim());
+              // Also add partial name matches for better matching
+              // e.g., "Kamp Ocakları" -> "ocakları", "ocak", "kamp"
+              const nameWords = cat.name.toLowerCase().trim().split(/\s+/);
+              nameWords.forEach(word => {
+                if (word.length > 2) {
+                  matchingNames.add(word);
+                }
+              });
             }
           };
           
@@ -176,9 +184,35 @@ export const CategoryPage = () => {
             addCategoryToMatching(child);
           });
           
+          // Build a mapping from backend category names to frontend categories
+          // e.g., "Pişirme Ekipmanları" -> "Kamp Mutfağı" or "Kamp Ocakları"
+          const backendToFrontendNameMap = new Map<string, string[]>();
+          backendCategories.forEach(backendCat => {
+            if (backendCat.name) {
+              const backendName = String(backendCat.name).toLowerCase().trim();
+              const backendNameWords = backendName.split(/\s+/);
+              
+              // Find frontend categories that might match
+              const matchingFrontendCats = allCategories.filter(fc => {
+                const frontendName = fc.name.toLowerCase().trim();
+                const frontendNameWords = frontendName.split(/\s+/);
+                
+                // Check if any words match
+                return backendNameWords.some(bw => 
+                  frontendNameWords.some(fw => fw.includes(bw) || bw.includes(fw))
+                ) || frontendName.includes(backendName) || backendName.includes(frontendName);
+              });
+              
+              if (matchingFrontendCats.length > 0) {
+                backendToFrontendNameMap.set(backendCat.id, matchingFrontendCats.map(fc => fc.id));
+              }
+            }
+          });
+          
           console.log('Matching slugs:', Array.from(matchingSlugs));
           console.log('Matching names:', Array.from(matchingNames));
           console.log('Backend category slug map size:', backendCategorySlugMap.size);
+          console.log('Backend to frontend name map size:', backendToFrontendNameMap.size);
           console.log('Gear items to filter:', gear.length);
           
           // Filter gear with backend category mapping
@@ -187,18 +221,44 @@ export const CategoryPage = () => {
             const itemCategoryId = (item as any).categoryId || (item as any).category_id;
             
             // If gear has a backend UUID category_id, find the backend category and check its slug or name
-            if (itemCategoryId && backendCategorySlugMap.has(itemCategoryId)) {
-              const backendCategorySlug = backendCategorySlugMap.get(itemCategoryId);
-              if (backendCategorySlug && matchingSlugs.has(backendCategorySlug)) {
-                console.log('✓ Matched by backend UUID -> slug:', item.name, 'UUID:', itemCategoryId, 'slug:', backendCategorySlug);
-                return true;
+            if (itemCategoryId) {
+              // Try slug matching first
+              if (backendCategorySlugMap.has(itemCategoryId)) {
+                const backendCategorySlug = backendCategorySlugMap.get(itemCategoryId);
+                if (backendCategorySlug && matchingSlugs.has(backendCategorySlug)) {
+                  console.log('✓ Matched by backend UUID -> slug:', item.name, 'UUID:', itemCategoryId, 'slug:', backendCategorySlug);
+                  return true;
+                }
               }
               
-              // Also try matching by name as fallback
+              // Try name matching (exact or partial)
               const backendCategoryName = backendCategoryNameMap.get(itemCategoryId);
-              if (backendCategoryName && matchingNames.has(backendCategoryName)) {
-                console.log('✓ Matched by backend UUID -> name:', item.name, 'UUID:', itemCategoryId, 'name:', backendCategoryName);
-                return true;
+              if (backendCategoryName) {
+                // Exact name match
+                if (matchingNames.has(backendCategoryName)) {
+                  console.log('✓ Matched by backend UUID -> exact name:', item.name, 'UUID:', itemCategoryId, 'name:', backendCategoryName);
+                  return true;
+                }
+                
+                // Partial name match (check if any word matches)
+                const backendNameWords = backendCategoryName.split(/\s+/);
+                for (const word of backendNameWords) {
+                  if (word.length > 2 && matchingNames.has(word)) {
+                    console.log('✓ Matched by backend UUID -> partial name:', item.name, 'UUID:', itemCategoryId, 'word:', word);
+                    return true;
+                  }
+                }
+              }
+              
+              // Try backend-to-frontend name mapping
+              if (backendToFrontendNameMap.has(itemCategoryId)) {
+                const matchingFrontendIds = backendToFrontendNameMap.get(itemCategoryId) || [];
+                for (const frontendId of matchingFrontendIds) {
+                  if (matchingCategoryIds.has(frontendId)) {
+                    console.log('✓ Matched by backend-to-frontend name mapping:', item.name, 'UUID:', itemCategoryId, 'frontend ID:', frontendId);
+                    return true;
+                  }
+                }
               }
             }
             

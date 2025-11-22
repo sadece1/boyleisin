@@ -98,15 +98,18 @@ export const useGearStore = create<GearState>((set, get) => ({
         });
       }
 
-      // Add optional fields
-      if (gearData.brand) {
+      // Add optional fields - only append if they have values (not undefined)
+      if (gearData.brand && gearData.brand.trim() !== '') {
         formData.append('brand', gearData.brand);
       }
-      if (gearData.color) {
+      if (gearData.color && gearData.color.trim() !== '') {
         formData.append('color', gearData.color);
       }
-      if (gearData.rating !== undefined) {
+      if (gearData.rating !== undefined && gearData.rating !== null) {
         formData.append('rating', String(gearData.rating));
+      }
+      if (gearData.specifications && Object.keys(gearData.specifications).length > 0) {
+        formData.append('specifications', JSON.stringify(gearData.specifications));
       }
       if (gearData.recommendedProducts && gearData.recommendedProducts.length > 0) {
         formData.append('recommendedProducts', JSON.stringify(gearData.recommendedProducts));
