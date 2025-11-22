@@ -244,13 +244,16 @@ export const EditGearPage = () => {
         setSpecificationsState([{ key: '', value: '' }]); // YENİ: State'e de yükle
       }
       
-      // YENİ: Rating'i state'e direkt yükle
+      // YENİ: Rating'i state'e direkt yükle - MEVCUT DEĞERİ KORU
       const gearRating = currentGear.rating ?? currentGear.rating_value ?? null;
       if (gearRating !== null && gearRating !== undefined) {
         const ratingNum = typeof gearRating === 'number' ? gearRating : parseFloat(String(gearRating));
-        setRatingState(isNaN(ratingNum) ? null : ratingNum);
+        const finalRating = isNaN(ratingNum) ? null : ratingNum;
+        setRatingState(finalRating);
+        console.log('✅ Loaded rating to state:', finalRating, 'from gear:', gearRating);
       } else {
         setRatingState(null);
+        console.log('⚠️ No rating in gear, set to null');
       }
       
       // Kategori hiyerarşisini belirle
@@ -489,58 +492,52 @@ export const EditGearPage = () => {
       // Combine existing URLs with newly uploaded images
       const validImages = [...imageUrls, ...uploadedImageUrls].filter(url => url.trim() !== '');
       
-      // Convert specifications array to object
+      // YENİ MEKANİZMA 1: Teknik Özellikler - State'den direkt al, yoksa mevcut değerleri koru
       const specificationsObj: Record<string, string> = {};
-      specifications.forEach(spec => {
+      // ÖNEMLİ: specificationsState kullan (specifications değil!)
+      specificationsState.forEach(spec => {
         if (spec.key.trim() && spec.value.trim()) {
           specificationsObj[spec.key.trim()] = spec.value.trim();
         }
       });
+      console.log('✅ Specifications from STATE:', specificationsState);
+      console.log('✅ Specifications object:', specificationsObj);
       
-      // Extract and validate form values - use formData instead of data
+      // Extract and validate form values
       const pricePerDay = typeof formData.pricePerDay === 'number' && !isNaN(formData.pricePerDay) ? formData.pricePerDay : (formData.pricePerDay ? Number(formData.pricePerDay) : 0);
       const deposit = formData.deposit !== undefined && formData.deposit !== null && !isNaN(Number(formData.deposit)) ? Number(formData.deposit) : null;
-      // Rating can be 0-5, or null/undefined
-      // Get rating from form data, watch value, or getValues
-      const formRating = formData.rating !== undefined ? formData.rating : (ratingValue !== undefined ? ratingValue : allFormValues.rating);
-      console.log('Rating sources:', { 
-        handleSubmitData: data.rating, 
-        formDataRating: formData.rating,
-        watchValue: ratingValue, 
-        getValuesRating: allFormValues.rating,
-        finalRating: formRating 
-      });
       
-      const rating = formRating !== undefined && formRating !== null && formRating !== '' 
-        ? (typeof formRating === 'number' ? formRating : Number(formRating))
-        : (formRating === null || formRating === '' ? null : undefined);
-      // If rating is NaN, set to null
-      const finalRating = (rating !== undefined && rating !== null && !isNaN(rating)) ? rating : null;
+      // YENİ MEKANİZMA 2: Yıldız (Rating) - State'den direkt al, yoksa mevcut değeri koru
+      // Eğer ratingState null/undefined ise, mevcut rating'i koru
+      const finalRatingValue = (ratingState !== null && ratingState !== undefined) 
+        ? ratingState 
+        : (currentGear.rating !== null && currentGear.rating !== undefined 
+          ? (typeof currentGear.rating === 'number' ? currentGear.rating : parseFloat(String(currentGear.rating)))
+          : null);
+      console.log('✅ Rating from STATE:', ratingState);
+      console.log('✅ Current gear rating:', currentGear.rating);
+      console.log('✅ Final rating value:', finalRatingValue);
       
-      console.log('Form data received (handleSubmit):', data);
-      console.log('Form data received (getValues):', allFormValues);
-      console.log('Using formData:', formData);
-      console.log('Form data.rating:', formData.rating, typeof formData.rating);
-      console.log('Extracted values:', { pricePerDay, deposit, rating: formRating });
-      console.log('Final rating value:', finalRating);
-      
-      // CRITICAL: Ensure rating, specifications and categoryId are ALWAYS set (never undefined)
-      // Backend checks for !== undefined, so we must always provide these values
-      const finalRatingValue = finalRating !== undefined && finalRating !== null 
-        ? finalRating 
-        : (ratingValue !== undefined && ratingValue !== null 
-          ? ratingValue 
-          : (currentGear.rating !== undefined && currentGear.rating !== null 
-            ? currentGear.rating 
-            : null));
-      
+      // Specifications: Eğer state'de değer yoksa, mevcut değerleri koru
       const finalSpecifications = Object.keys(specificationsObj).length > 0 
         ? specificationsObj 
         : (currentGear.specifications && Object.keys(currentGear.specifications).length > 0 
           ? currentGear.specifications 
           : {});
       
-      const finalCategoryIdValue = finalCategoryId || currentGear.categoryId || '';
+      // Category: Eğer seçim yapılmamışsa, mevcut kategoriyi koru
+      const finalCategoryIdValue = (selectedFinalCategory || selectedSubCategory || selectedParentCategory) 
+        || currentGear.categoryId 
+        || '';
+      
+      console.log('🎯 FINAL VALUES TO SEND:', {
+        rating: finalRatingValue,
+        specifications: finalSpecifications,
+        categoryId: finalCategoryIdValue,
+        ratingState,
+        selectedCategories: { selectedFinalCategory, selectedSubCategory, selectedParentCategory },
+        currentGearCategoryId: currentGear.categoryId
+      });
       
       console.log('CRITICAL VALUES:', {
         finalRatingValue,
