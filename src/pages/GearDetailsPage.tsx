@@ -452,26 +452,35 @@ export const GearDetailsPage = () => {
                 </h1>
                 
                 {/* Rating Section */}
-                {gear.rating && (
-                  <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">
-                          Değerlendirme
-                        </div>
-                        {renderStars(gear.rating)}
+                <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                        Değerlendirme
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-semibold text-gray-900 dark:text-white">
-                          {gear.rating ? (typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating || 0)).toFixed(1)) : '0.0'}
+                      {renderStars(gear.rating) || (
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i} className="text-gray-300 dark:text-gray-600 text-sm">★</span>
+                          ))}
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 ml-1.5">
+                            0.0 / 5.0
+                          </span>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          / 5.0
-                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+                        {gear.rating !== undefined && gear.rating !== null 
+                          ? (typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating || 0)).toFixed(1))
+                          : '0.0'}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        / 5.0
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {(() => {
                   const itemStatus = gear.status || (gear.available ? 'for-sale' : 'sold');
@@ -614,30 +623,32 @@ export const GearDetailsPage = () => {
                           </div>
                         </div>
                       )}
-                      {gear.rating && (
-                        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
-                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Değerlendirme</div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                              {gear.rating ? (typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating || 0)).toFixed(1)) : '0.0'}
-                            </span>
-                            <div className="flex items-center gap-0.5">
-                              {[...Array(5)].map((_, i) => {
-                                const ratingNum = typeof gear.rating === 'number' ? gear.rating : parseFloat(String(gear.rating || 0));
-                                const fullStars = Math.floor(ratingNum);
-                                const hasHalfStar = ratingNum % 1 >= 0.5;
-                                if (i < fullStars) {
-                                  return <span key={i} className="text-yellow-500">★</span>;
-                                } else if (i === fullStars && hasHalfStar) {
-                                  return <span key={i} className="text-yellow-400">☆</span>;
-                                } else {
-                                  return <span key={i} className="text-gray-300 dark:text-gray-600">★</span>;
-                                }
-                              })}
-                            </div>
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Değerlendirme</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                            {gear.rating !== undefined && gear.rating !== null 
+                              ? (typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating || 0)).toFixed(1))
+                              : '0.0'}
+                          </span>
+                          <div className="flex items-center gap-0.5">
+                            {[...Array(5)].map((_, i) => {
+                              const ratingNum = gear.rating !== undefined && gear.rating !== null
+                                ? (typeof gear.rating === 'number' ? gear.rating : parseFloat(String(gear.rating || 0)))
+                                : 0;
+                              const fullStars = Math.floor(ratingNum);
+                              const hasHalfStar = ratingNum % 1 >= 0.5;
+                              if (i < fullStars) {
+                                return <span key={i} className="text-yellow-500">★</span>;
+                              } else if (i === fullStars && hasHalfStar) {
+                                return <span key={i} className="text-yellow-400">☆</span>;
+                              } else {
+                                return <span key={i} className="text-gray-300 dark:text-gray-600">★</span>;
+                              }
+                            })}
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}
