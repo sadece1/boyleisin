@@ -68,7 +68,62 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const gear = await createGear(req.body, req.user.id);
+  // Parse FormData fields - extract image URLs from image_0, image_1, etc.
+  const images: string[] = [];
+  let imageIndex = 0;
+  while (req.body[`image_${imageIndex}`]) {
+    const imageUrl = req.body[`image_${imageIndex}`];
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+      images.push(imageUrl.trim());
+    }
+    imageIndex++;
+  }
+
+  // Parse specifications if it's a string (JSON)
+  let specifications = req.body.specifications;
+  if (typeof specifications === 'string') {
+    try {
+      specifications = JSON.parse(specifications);
+    } catch (e) {
+      specifications = {};
+    }
+  }
+
+  // Parse recommended_products if it's a string (JSON)
+  let recommended_products = req.body.recommendedProducts || req.body.recommended_products;
+  if (typeof recommended_products === 'string') {
+    try {
+      recommended_products = JSON.parse(recommended_products);
+    } catch (e) {
+      recommended_products = [];
+    }
+  }
+
+  // Parse numeric fields
+  const price_per_day = req.body.price_per_day 
+    ? (typeof req.body.price_per_day === 'string' ? parseFloat(req.body.price_per_day) : req.body.price_per_day)
+    : null;
+  const deposit = req.body.deposit 
+    ? (typeof req.body.deposit === 'string' ? parseFloat(req.body.deposit) : req.body.deposit)
+    : null;
+
+  // Build gear data object
+  const gearData: any = {
+    name: req.body.name || null,
+    description: req.body.description || null,
+    category_id: req.body.category_id || null,
+    images: images.length > 0 ? images : (req.body.images || []),
+    price_per_day: price_per_day,
+    deposit: deposit !== null && deposit !== undefined ? deposit : null,
+    available: req.body.available !== undefined ? (req.body.available === 'true' || req.body.available === true) : true,
+    status: req.body.status || null,
+    specifications: specifications || {},
+    brand: req.body.brand || null,
+    color: req.body.color || null,
+    recommended_products: recommended_products || [],
+  };
+
+  const gear = await createGear(gearData, req.user.id);
 
   res.status(201).json({
     success: true,

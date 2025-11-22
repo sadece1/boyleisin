@@ -162,19 +162,19 @@ export const createGear = async (
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
-      data.name,
-      data.description,
-      data.category_id || null,
+      data.name ?? null,
+      data.description ?? null,
+      data.category_id ?? null,
       JSON.stringify(data.images || []),
-      data.price_per_day,
-      data.deposit || null,
+      data.price_per_day ?? null,
+      data.deposit ?? null,
       data.available ?? true,
-      data.status,
+      data.status ?? null,
       JSON.stringify(data.specifications || {}),
-      data.brand || null,
-      data.color || null,
+      data.brand ?? null,
+      data.color ?? null,
       JSON.stringify(data.recommended_products || []),
-      userId || null,
+      userId ?? null,
     ]
   );
 
