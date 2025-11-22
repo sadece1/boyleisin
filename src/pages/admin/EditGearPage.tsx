@@ -504,7 +504,19 @@ export const EditGearPage = () => {
       }
 
       // Combine existing URLs with newly uploaded images
-      const validImages = [...imageUrls, ...uploadedImageUrls].filter(url => url.trim() !== '');
+      // Eğer imageUrls boşsa, mevcut resimleri koru
+      const existingImages = imageUrls.length > 0 
+        ? imageUrls 
+        : (currentGear.images && currentGear.images.length > 0 ? currentGear.images : []);
+      const validImages = [...existingImages, ...uploadedImageUrls].filter(url => url.trim() !== '');
+      
+      console.log('🖼️ Images check:', {
+        imageUrlsLength: imageUrls.length,
+        currentGearImagesLength: currentGear.images?.length || 0,
+        existingImagesLength: existingImages.length,
+        uploadedImageUrlsLength: uploadedImageUrls.length,
+        validImagesLength: validImages.length
+      });
       
       // YENİ MEKANİZMA 1: Teknik Özellikler - State'den direkt al, yoksa mevcut değerleri koru
       const specificationsObj: Record<string, string> = {};
