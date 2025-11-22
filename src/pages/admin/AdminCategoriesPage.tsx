@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { routes } from '@/config';
 import { Category } from '@/types';
 import { categoryManagementService } from '@/services/categoryManagementService';
+import { syncCategoriesToBackend } from '@/utils/syncCategoriesToBackend';
 
 export const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -393,14 +394,26 @@ export const AdminCategoriesPage = () => {
                 Kategorilerinizi yönetin, düzenleyin ve organize edin
               </p>
             </div>
-            <Link to={routes.adminAddCategory}>
-              <Button variant="primary" size="lg">
-                <span className="flex items-center space-x-2">
-                  <span>➕</span>
-                  <span>Yeni Kategori Ekle</span>
-                </span>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleSyncToBackend}
+                disabled={isSyncing}
+                className="flex items-center space-x-2"
+              >
+                <span>{isSyncing ? '⏳' : '🔄'}</span>
+                <span>{isSyncing ? 'Senkronize Ediliyor...' : 'Backend\'e Senkronize Et'}</span>
               </Button>
-            </Link>
+              <Link to={routes.adminAddCategory}>
+                <Button variant="primary" size="lg">
+                  <span className="flex items-center space-x-2">
+                    <span>➕</span>
+                    <span>Yeni Kategori Ekle</span>
+                  </span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Stats Cards */}
