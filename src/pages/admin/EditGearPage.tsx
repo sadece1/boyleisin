@@ -634,18 +634,30 @@ export const EditGearPage = () => {
     setImageUrls(newUrls);
   };
 
+  // YENİ MEKANİZMA: Teknik Özellikler - State Yönetimi
   const addSpecification = () => {
-    setSpecifications([...specifications, { key: '', value: '' }]);
+    const newSpecs = [...specificationsState, { key: '', value: '' }];
+    setSpecificationsState(newSpecs);
+    setSpecifications(newSpecs); // Eski state'i de güncelle (backward compatibility)
+    console.log('➕ Added specification, total:', newSpecs.length);
   };
 
   const removeSpecification = (index: number) => {
-    setSpecifications(specifications.filter((_, i) => i !== index));
+    const newSpecs = specificationsState.filter((_, i) => i !== index);
+    if (newSpecs.length === 0) {
+      newSpecs.push({ key: '', value: '' }); // En az bir boş alan bırak
+    }
+    setSpecificationsState(newSpecs);
+    setSpecifications(newSpecs); // Eski state'i de güncelle
+    console.log('➖ Removed specification, total:', newSpecs.length);
   };
 
   const updateSpecification = (index: number, field: 'key' | 'value', value: string) => {
-    const newSpecs = [...specifications];
+    const newSpecs = [...specificationsState];
     newSpecs[index] = { ...newSpecs[index], [field]: value };
-    setSpecifications(newSpecs);
+    setSpecificationsState(newSpecs);
+    setSpecifications(newSpecs); // Eski state'i de güncelle
+    console.log(`✏️ Updated specification[${index}].${field}:`, value);
   };
 
   if (isLoading || !currentGear) {
@@ -908,25 +920,26 @@ export const EditGearPage = () => {
               </div>
             </div>
 
-            {/* Değerlendirme (Yıldız) */}
+            {/* YENİ MEKANİZMA: Değerlendirme (Yıldız) - Direkt State Yönetimi */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Değerlendirme (Yıldız)
+                Değerlendirme (Yıldız) *
               </label>
               <div className="flex items-center space-x-2">
-                {[1, 2, 3, 4, 5].map((rating) => {
-                  const currentRating = Number(ratingValue) || 0;
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const isSelected = ratingState !== null && ratingState >= star;
                   return (
                     <button
-                      key={rating}
+                      key={star}
                       type="button"
                       onClick={() => {
-                        console.log('Setting rating to:', rating);
-                        setValue('rating', rating, { shouldValidate: true, shouldDirty: true });
-                        console.log('Rating set, current form value:', watch('rating'));
+                        console.log('⭐ Setting rating STATE to:', star);
+                        setRatingState(star);
+                        // Form'a da set et (backup)
+                        setValue('rating', star, { shouldValidate: false, shouldDirty: false });
                       }}
                       className={`text-3xl transition-all ${
-                        currentRating >= rating
+                        isSelected
                           ? 'text-yellow-400'
                           : 'text-gray-300 dark:text-gray-600'
                       } hover:scale-110`}
@@ -935,10 +948,14 @@ export const EditGearPage = () => {
                     </button>
                   );
                 })}
-                {ratingValue && (
+                {ratingState !== null && (
                   <button
                     type="button"
-                    onClick={() => setValue('rating', undefined)}
+                    onClick={() => {
+                      console.log('🗑️ Clearing rating STATE');
+                      setRatingState(null);
+                      setValue('rating', null, { shouldValidate: false, shouldDirty: false });
+                    }}
                     className="ml-4 text-sm text-red-600 dark:text-red-400 hover:underline"
                   >
                     Temizle
@@ -948,10 +965,10 @@ export const EditGearPage = () => {
               <input
                 type="hidden"
                 {...register('rating', { valueAsNumber: true })}
-                value={ratingValue || ''}
+                value={ratingState !== null ? ratingState : ''}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Seçilen: {ratingValue ? `${ratingValue} yıldız` : 'Yok'}
+                Seçilen: {ratingState !== null ? `${ratingState} yıldız` : 'Yok'}
               </p>
             </div>
 
@@ -1071,7 +1088,7 @@ export const EditGearPage = () => {
                     placeholder="Örn: Alüminyum"
                     className="flex-1"
                   />
-                  {specifications.length > 1 && (
+                  {specificationsState.length > 1 && (
                     <Button
                       type="button"
                       variant="danger"
