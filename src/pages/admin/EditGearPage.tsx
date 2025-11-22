@@ -828,6 +828,7 @@ export const EditGearPage = () => {
               <input
                 type="hidden"
                 {...register('rating', { valueAsNumber: true })}
+                value={ratingValue || ''}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Seçilen: {ratingValue ? `${ratingValue} yıldız` : 'Yok'}

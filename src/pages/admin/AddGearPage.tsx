@@ -242,9 +242,13 @@ export const AddGearPage = () => {
       const pricePerDay = typeof data.pricePerDay === 'number' && !isNaN(data.pricePerDay) ? data.pricePerDay : (data.pricePerDay ? Number(data.pricePerDay) : 0);
       const deposit = data.deposit !== undefined && data.deposit !== null && !isNaN(Number(data.deposit)) ? Number(data.deposit) : null;
       // Rating can be 0-5, or null/undefined
-      const rating = data.rating !== undefined && data.rating !== null && data.rating !== '' 
-        ? (typeof data.rating === 'number' ? data.rating : Number(data.rating))
-        : (data.rating === null || data.rating === '' ? null : undefined);
+      // Get rating from form data or watch value
+      const formRating = data.rating !== undefined ? data.rating : ratingValue;
+      console.log('Rating sources:', { formData: data.rating, watchValue: ratingValue, formRating });
+      
+      const rating = formRating !== undefined && formRating !== null && formRating !== '' 
+        ? (typeof formRating === 'number' ? formRating : Number(formRating))
+        : (formRating === null || formRating === '' ? null : undefined);
       // If rating is NaN, set to null
       const finalRating = (rating !== undefined && rating !== null && !isNaN(rating)) ? rating : null;
       
@@ -597,6 +601,7 @@ export const AddGearPage = () => {
               <input
                 type="hidden"
                 {...register('rating', { valueAsNumber: true })}
+                value={ratingValue || ''}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Seçilen: {ratingValue ? `${ratingValue} yıldız` : 'Yok'}
