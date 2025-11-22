@@ -613,6 +613,7 @@ export const EditGearPage = () => {
                 valueAsNumber: true,
               })}
               error={errors.deposit?.message}
+              value={watch('deposit') && !isNaN(Number(watch('deposit'))) ? watch('deposit') : ''}
             />
 
             {/* Marka */}
