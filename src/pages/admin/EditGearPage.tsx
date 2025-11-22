@@ -98,10 +98,29 @@ export const EditGearPage = () => {
     if (currentGear) {
       // Status'u belirle (available'dan veya mevcut status'tan)
       const status = currentGear.status || (currentGear.available ? 'for-sale' : 'sold');
+      
+      // Reset form with all gear data
       reset({
-        ...currentGear,
+        name: currentGear.name || '',
+        description: currentGear.description || '',
+        pricePerDay: currentGear.pricePerDay || 0,
+        deposit: currentGear.deposit,
+        brand: currentGear.brand || '',
+        color: currentGear.color || '',
+        rating: currentGear.rating,
         status: status as GearStatus,
       });
+      
+      // Explicitly set all values using setValue to ensure they're loaded
+      setValue('name', currentGear.name || '');
+      setValue('description', currentGear.description || '');
+      setValue('pricePerDay', currentGear.pricePerDay || 0);
+      setValue('deposit', currentGear.deposit);
+      setValue('brand', currentGear.brand || '');
+      setValue('color', currentGear.color || '');
+      setValue('rating', currentGear.rating);
+      setValue('status', status as GearStatus);
+      
       setImageUrls(currentGear.images && currentGear.images.length > 0 ? currentGear.images : []);
       setImageFiles([]);
       
@@ -116,7 +135,7 @@ export const EditGearPage = () => {
       if (currentGear.specifications && Object.keys(currentGear.specifications).length > 0) {
         const specsArray = Object.entries(currentGear.specifications).map(([key, value]) => ({
           key,
-          value,
+          value: String(value),
         }));
         setSpecifications(specsArray);
       } else {
@@ -157,7 +176,7 @@ export const EditGearPage = () => {
         }
       }
     }
-  }, [currentGear, reset]);
+  }, [currentGear, reset, setValue]);
 
   // Ana kategori değiştiğinde alt kategorileri güncelle
   useEffect(() => {
@@ -467,6 +486,17 @@ export const EditGearPage = () => {
                 valueAsNumber: true,
               })}
               error={errors.pricePerDay?.message}
+            />
+
+            <Input
+              label="Teminat (₺) - İsteğe Bağlı"
+              type="number"
+              step="0.01"
+              {...register('deposit', {
+                min: { value: 0, message: 'Teminat 0\'dan büyük olmalıdır' },
+                valueAsNumber: true,
+              })}
+              error={errors.deposit?.message}
             />
 
             {/* Marka */}
