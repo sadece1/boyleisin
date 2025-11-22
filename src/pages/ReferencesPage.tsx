@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { SEO } from '@/components/SEO';
 import { referenceService, Reference } from '@/services/referenceService';
 import { brandService, Brand } from '@/services/brandService';
+import { uploadService } from '@/services/uploadService';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const ReferencesPage = () => {
@@ -45,7 +46,14 @@ export const ReferencesPage = () => {
         brandService.getAllBrands(),
       ]);
       setReferences(refsData);
-      setBrands(brandsData.filter(b => b.logo)); // Only show brands with logos
+      // Filter brands with logos and convert logo paths to full URLs
+      const brandsWithLogos = brandsData
+        .filter(b => b.logo)
+        .map(b => ({
+          ...b,
+          logo: b.logo ? uploadService.getFileUrl(b.logo) : undefined
+        }));
+      setBrands(brandsWithLogos);
     } catch (error) {
       console.error('Failed to load references data:', error);
     } finally {
@@ -161,17 +169,17 @@ export const ReferencesPage = () => {
                 <LoadingSpinner size="lg" />
               </div>
             ) : references.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {references.map((reference, index) => (
-                  <motion.div
-                    key={reference.id}
-                    className="group relative cursor-pointer"
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    onClick={() => handleImageClick(reference.id)}
-                  >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {references.map((reference, index) => (
+                <motion.div
+                  key={reference.id}
+                  className="group relative cursor-pointer"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  onClick={() => handleImageClick(reference.id)}
+                >
                   {/* Elegant Image Frame */}
                   <div className="relative rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border-4 border-white dark:border-gray-800 group-hover:border-primary-400 dark:group-hover:border-primary-600">
                     {/* Image */}
@@ -215,8 +223,8 @@ export const ReferencesPage = () => {
                     <div className="absolute inset-0 rounded-2xl border-2 border-primary-400/0 group-hover:border-primary-400/50 transition-all duration-300 pointer-events-none" />
                   </div>
                 </motion.div>
-                ))}
-              </div>
+              ))}
+            </div>
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500 dark:text-gray-400 text-lg">
@@ -251,28 +259,28 @@ export const ReferencesPage = () => {
                   <LoadingSpinner size="lg" />
                 </div>
               ) : brands.length > 0 ? (
-                <div className="brands-carousel-container">
-                  <div className="brands-carousel-track">
-                    {/* Duplicate brands for seamless infinite loop */}
-                    {[...brands, ...brands].map((brand, index) => (
-                      <motion.div
-                        key={`brand-${brand.id}-${index}`}
-                        className="brand-carousel-item group relative flex-shrink-0 mx-2"
-                        whileHover={{ y: -3, scale: 1.05 }}
-                      >
-                        {/* Yuvarlak Marka Logo */}
-                        <div className="relative w-full aspect-square rounded-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 group-hover:border-primary-400 dark:group-hover:border-primary-500">
-                          <img
+              <div className="brands-carousel-container">
+                <div className="brands-carousel-track">
+                  {/* Duplicate brands for seamless infinite loop */}
+                  {[...brands, ...brands].map((brand, index) => (
+                    <motion.div
+                      key={`brand-${brand.id}-${index}`}
+                      className="brand-carousel-item group relative flex-shrink-0 mx-2"
+                      whileHover={{ y: -3, scale: 1.05 }}
+                    >
+                      {/* Yuvarlak Marka Logo */}
+                      <div className="relative w-full aspect-square rounded-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 group-hover:border-primary-400 dark:group-hover:border-primary-500">
+                        <img
                             src={brand.logo || ''}
-                            alt={brand.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                          alt={brand.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+              </div>
               ) : (
                 <div className="text-center py-12">
                   <p className="text-gray-500 dark:text-gray-400 text-lg">
