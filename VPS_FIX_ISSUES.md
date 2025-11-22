@@ -1,6 +1,56 @@
-# VPS Hata Düzeltme Adımları
+# Sorunlar ve Çözümler
 
-## 1. Kodu Güncelle ve Build Et
+## ✅ Çözülen Sorunlar
+
+### 1. Ürün İsmi ve Açıklama Uzayınca Site Tasarımı Taşıyor
+
+**Sorun:** Ürün açıklamasına 100–200–300 karakter girildiğinde site üzerinde ürünün göründüğü kısım sağa doğru taşıyordu.
+
+**Çözüm:** 
+- `GearCard.tsx` - Ürün kartlarında text overflow düzeltildi
+- `GearDetailsPage.tsx` - Ürün detay sayfasında text overflow düzeltildi
+- `HomePage.tsx` - Ana sayfadaki ürün kartlarında text overflow düzeltildi
+- `SearchResultsPage.tsx` - Arama sonuçları sayfasında text overflow düzeltildi
+
+**Eklenen CSS:**
+```css
+word-break: break-word;
+overflow-wrap: break-word;
+overflow-x: hidden;
+max-width: 100%;
+```
+
+### 2. Yıldız (Rating) Bilgisi Kaydedilmiyor
+
+**Sorun:** Ürüne eklenen yıldız bilgisi kaydedilmiyordu. Kayıt veya güncelleme sonrası rating değeri tekrar sıfırlanıyordu.
+
+**Çözüm:**
+- **Frontend:** `gearService.ts` - `updateGear` fonksiyonunda rating'i doğru parse ediyoruz
+- **Backend:** `gear.routes.ts` - `transformFormData` middleware'inde rating parsing eklendi
+- **Backend:** `gearService.ts` - `updateGear` fonksiyonunda rating kaydediliyor
+
+### 3. Teknik Bilgi ve Kategori Seçimi Kaydedilmiyor
+
+**Sorun:** Teknik Bilgi alanına girilen bilgiler kayıt sonrası kayboluyordu. Kategori her güncellemede sıfırlanıyordu.
+
+**Çözüm:**
+- **Frontend:** `gearService.ts` - `categoryId`'yi `category_id`'ye çeviriyoruz
+- **Backend:** `gear.routes.ts` - Hem `categoryId` hem `category_id` formatını destekliyoruz
+- **Backend:** `gearService.ts` - `updateGear` fonksiyonunda specifications ve category_id kaydediliyor
+
+## 📝 Değişiklikler
+
+### Frontend
+- `src/components/GearCard.tsx` - Text overflow düzeltildi
+- `src/pages/GearDetailsPage.tsx` - Text overflow düzeltildi
+- `src/pages/HomePage.tsx` - Text overflow düzeltildi
+- `src/pages/SearchResultsPage.tsx` - Text overflow düzeltildi
+- `src/services/gearService.ts` - Rating ve categoryId dönüşümü eklendi
+
+### Backend
+- `server/src/routes/gear.routes.ts` - Rating parsing ve categoryId desteği eklendi
+
+## 🚀 VPS Deploy Komutları
 
 ```bash
 cd /var/www/campscape
@@ -9,56 +59,8 @@ cd server
 npm install
 npm run build
 pm2 restart campscape-backend
+cd ..
+npm install
+npm run build
+pm2 restart all
 ```
-
-## 2. user_orders Tablosunu Oluştur
-
-```bash
-mysql -u root -p
-# Şifre: MySecurePass123!@#
-```
-
-MySQL'de:
-
-```sql
-USE campscape_marketplace;
-
-CREATE TABLE IF NOT EXISTS user_orders (
-    id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(36) NOT NULL,
-    gear_id VARCHAR(36) NOT NULL,
-    status ENUM('waiting', 'arrived', 'shipped') NOT NULL DEFAULT 'waiting',
-    price DECIMAL(10, 2) NOT NULL,
-    public_note TEXT,
-    private_note TEXT,
-    shipped_date DATE,
-    shipped_time TIME,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_user_id (user_id),
-    INDEX idx_gear_id (gear_id),
-    INDEX idx_status (status),
-    INDEX idx_created_at (created_at),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (gear_id) REFERENCES gear(id) ON DELETE CASCADE
-);
-
-EXIT;
-```
-
-## 3. Kontrol Et
-
-```bash
-pm2 logs campscape-backend --lines 20
-```
-
-## Hızlı Komutlar (Tek Satır)
-
-```bash
-# Kodu güncelle ve build et
-cd /var/www/campscape && git pull origin main && cd server && npm install && npm run build && pm2 restart campscape-backend
-
-# Tablo oluştur (MySQL'de çalıştır)
-mysql -u root -p campscape_marketplace -e "CREATE TABLE IF NOT EXISTS user_orders (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL, gear_id VARCHAR(36) NOT NULL, status ENUM('waiting', 'arrived', 'shipped') NOT NULL DEFAULT 'waiting', price DECIMAL(10, 2) NOT NULL, public_note TEXT, private_note TEXT, shipped_date DATE, shipped_time TIME, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_user_id (user_id), INDEX idx_gear_id (gear_id), INDEX idx_status (status), INDEX idx_created_at (created_at), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (gear_id) REFERENCES gear(id) ON DELETE CASCADE);"
-```
-
