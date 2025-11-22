@@ -135,7 +135,11 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     // Skip rate limiting for health checks and categories (frequently accessed)
-    return req.path === '/health' || req.path.startsWith('/api/categories');
+    const path = req.path || req.url || '';
+    return path === '/health' || 
+           path === '/api/health' ||
+           path.startsWith('/api/categories') ||
+           path.startsWith('/categories');
   },
 });
 
@@ -158,6 +162,7 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Apply rate limiting - categories route is excluded via skip function
 app.use('/api/', generalLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
