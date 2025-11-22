@@ -95,5 +95,26 @@ export const categoryManagementService = {
       throw new Error(message);
     }
   },
+
+  async getCategoryBySlug(slug: string): Promise<Category | null> {
+    try {
+      const allCategories = await this.getAllCategories();
+      const category = allCategories.find(cat => cat.slug === slug);
+      return category || null;
+    } catch (error) {
+      console.error('Failed to fetch category by slug:', error);
+      return null;
+    }
+  },
+
+  async getChildCategories(parentId: string): Promise<Category[]> {
+    try {
+      const allCategories = await this.getAllCategories();
+      return allCategories.filter(cat => cat.parentId === parentId);
+    } catch (error) {
+      console.error('Failed to fetch child categories:', error);
+      return [];
+    }
+  },
 };
 
