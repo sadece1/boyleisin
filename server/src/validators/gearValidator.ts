@@ -20,7 +20,7 @@ export const createGearSchema = Joi.object({
     'number.positive': 'Price must be a positive number',
     'any.required': 'Price per day is required',
   }),
-  deposit: Joi.number().positive().precision(2).optional(),
+  deposit: Joi.number().min(0).precision(2).allow(null).optional(),
   status: Joi.string()
     .valid('for-sale', 'sold', 'orderable')
     .required()
@@ -41,7 +41,7 @@ export const updateGearSchema = Joi.object({
   category_id: Joi.string().uuid().optional(),
   images: Joi.array().items(Joi.string().uri()).min(1).max(10).optional(),
   price_per_day: Joi.number().positive().precision(2).optional(),
-  deposit: Joi.number().positive().precision(2).optional(),
+  deposit: Joi.number().min(0).precision(2).allow(null).optional(),
   status: Joi.string().valid('for-sale', 'sold', 'orderable').optional(),
   specifications: Joi.object().optional(),
   brand: Joi.string().max(100).trim().optional(),

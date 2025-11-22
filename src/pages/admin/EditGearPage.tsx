@@ -123,27 +123,29 @@ export const EditGearPage = () => {
       // Status'u belirle (available'dan veya mevcut status'tan)
       const status = currentGear.status || (currentGear.available ? 'for-sale' : 'sold');
       
-      // Reset form with all gear data
-      reset({
+      // Reset form with all gear data - use actual values, not defaults
+      const formData = {
         name: currentGear.name || '',
         description: currentGear.description || '',
-        pricePerDay: currentGear.pricePerDay || 0,
-        deposit: currentGear.deposit || 0,
+        pricePerDay: currentGear.pricePerDay ?? 0,
+        deposit: currentGear.deposit ?? null,
         brand: currentGear.brand || '',
         color: currentGear.color || '',
-        rating: currentGear.rating,
+        rating: currentGear.rating ?? undefined,
         status: status as GearStatus,
-      });
+      };
+      
+      reset(formData);
       
       // Explicitly set all values using setValue to ensure they're loaded
-      setValue('name', currentGear.name || '');
-      setValue('description', currentGear.description || '');
-      setValue('pricePerDay', currentGear.pricePerDay || 0);
-      setValue('deposit', currentGear.deposit || 0);
-      setValue('brand', currentGear.brand || '');
-      setValue('color', currentGear.color || '');
-      setValue('rating', currentGear.rating);
-      setValue('status', status as GearStatus);
+      setValue('name', formData.name);
+      setValue('description', formData.description);
+      setValue('pricePerDay', formData.pricePerDay);
+      setValue('deposit', formData.deposit);
+      setValue('brand', formData.brand);
+      setValue('color', formData.color);
+      setValue('rating', formData.rating);
+      setValue('status', formData.status);
       
       setImageUrls(currentGear.images && currentGear.images.length > 0 ? currentGear.images : []);
       setImageFiles([]);
@@ -334,6 +336,11 @@ export const EditGearPage = () => {
         specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : undefined,
         recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : undefined,
       };
+      
+      // Handle deposit: if it's 0 or empty, send null instead
+      if (updates.deposit === 0 || updates.deposit === null || updates.deposit === undefined) {
+        updates.deposit = null;
+      }
 
       await updateGearInStore(id, updates);
       navigate(routes.adminGear);
