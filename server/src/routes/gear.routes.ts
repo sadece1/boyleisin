@@ -62,11 +62,15 @@ const transformFormData = asyncHandler(async (req: Request, res: Response, next:
   }
 
   // Convert string numbers to numbers
-  if (req.body.price_per_day && typeof req.body.price_per_day === 'string') {
-    req.body.price_per_day = parseFloat(req.body.price_per_day);
+  if (req.body.price_per_day) {
+    if (typeof req.body.price_per_day === 'string') {
+      req.body.price_per_day = parseFloat(req.body.price_per_day);
+    }
   }
-  if (req.body.deposit && typeof req.body.deposit === 'string') {
-    req.body.deposit = parseFloat(req.body.deposit);
+  if (req.body.deposit) {
+    if (typeof req.body.deposit === 'string') {
+      req.body.deposit = parseFloat(req.body.deposit);
+    }
   }
 
   // Convert string boolean to boolean
