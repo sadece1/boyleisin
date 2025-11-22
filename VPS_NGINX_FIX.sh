@@ -103,6 +103,15 @@ server {
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+        etag on;
+        try_files $uri =404;
+    }
+    
+    # HTML dosyaları cache'lenmemeli
+    location ~* \.html$ {
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
         try_files $uri =404;
     }
     
@@ -118,6 +127,12 @@ server {
     }
     
     location / {
+        # HTML dosyaları cache'lenmemeli
+        if ($request_uri ~* \.html$) {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            expires -1;
+        }
         try_files $uri $uri/ /index.html;
     }
     
@@ -194,6 +209,15 @@ server {
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+        etag on;
+        try_files $uri =404;
+    }
+    
+    # HTML dosyaları cache'lenmemeli
+    location ~* \.html$ {
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
         try_files $uri =404;
     }
     
@@ -209,6 +233,12 @@ server {
     }
     
     location / {
+        # HTML dosyaları cache'lenmemeli
+        if ($request_uri ~* \.html$) {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            expires -1;
+        }
         try_files $uri $uri/ /index.html;
     }
     
