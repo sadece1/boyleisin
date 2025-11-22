@@ -182,16 +182,17 @@ export const AdminUsersPage = () => {
 
           {/* Add Form */}
           {isAdding && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 md:p-6">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                 Yeni Kullanıcı Ekle
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <Input
                   label="Ad Soyad *"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Örn: Ahmet Yılmaz"
+                  className="text-sm sm:text-base"
                 />
                 <Input
                   label="E-posta *"
@@ -199,6 +200,7 @@ export const AdminUsersPage = () => {
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="ornek@email.com"
+                  className="text-sm sm:text-base"
                 />
                 <Input
                   label="Şifre *"
@@ -206,22 +208,27 @@ export const AdminUsersPage = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="En az 6 karakter"
+                  className="text-sm sm:text-base"
                 />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
                     Rol *
                   </label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as 'user' | 'admin')}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                     <option value="user">Müşteri (User)</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="primary" onClick={handleAdd} className="flex-1 sm:flex-initial">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+                  <Button 
+                    variant="primary" 
+                    onClick={handleAdd} 
+                    className="w-full sm:flex-1 md:flex-initial text-sm sm:text-base px-4 py-2 sm:py-2.5"
+                  >
                     Kaydet
                   </Button>
                   <Button
@@ -233,7 +240,7 @@ export const AdminUsersPage = () => {
                       setNewPassword('');
                       setNewRole('user');
                     }}
-                    className="flex-1 sm:flex-initial"
+                    className="w-full sm:flex-1 md:flex-initial text-sm sm:text-base px-4 py-2 sm:py-2.5"
                   >
                     İptal
                   </Button>
