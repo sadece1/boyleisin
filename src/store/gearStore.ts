@@ -284,8 +284,12 @@ export const useGearStore = create<GearState>((set, get) => ({
       if (gearData.color && gearData.color.trim() !== '') {
         formData.append('color', gearData.color);
       }
-      if (gearData.rating !== undefined && gearData.rating !== null) {
-        formData.append('rating', String(gearData.rating));
+      // Always append rating, even if null (to explicitly set it)
+      if (gearData.rating !== undefined) {
+        formData.append('rating', gearData.rating !== null ? String(gearData.rating) : '');
+        console.log('Appending rating to FormData:', gearData.rating);
+      } else {
+        console.log('Rating is undefined, not appending to FormData');
       }
       if (gearData.specifications && Object.keys(gearData.specifications).length > 0) {
         formData.append('specifications', JSON.stringify(gearData.specifications));

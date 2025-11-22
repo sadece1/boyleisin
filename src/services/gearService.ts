@@ -115,8 +115,9 @@ export const gearService = {
         }
         // Ensure rating is a number or null
         // Rating can be 0-5, or null/undefined
+        console.log('Transforming rating in updateGear:', transformedData.rating, typeof transformedData.rating);
         if (transformedData.rating !== undefined) {
-          if (transformedData.rating === null || transformedData.rating === '') {
+          if (transformedData.rating === null || transformedData.rating === '' || transformedData.rating === 'null') {
             transformedData.rating = null;
           } else {
             const parsed = typeof transformedData.rating === 'number' 
@@ -125,9 +126,11 @@ export const gearService = {
             // Allow 0 as valid rating value
             transformedData.rating = isNaN(parsed) ? null : parsed;
           }
+          console.log('Transformed rating value:', transformedData.rating);
         } else {
           // If rating is not provided in update, don't include it (undefined)
           // This allows partial updates without overwriting existing rating
+          console.log('Rating is undefined, not including in update');
         }
       }
 

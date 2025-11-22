@@ -455,7 +455,9 @@ export const EditGearPage = () => {
       const finalRating = (rating !== undefined && rating !== null && !isNaN(rating)) ? rating : null;
       
       console.log('Form data received:', data);
+      console.log('Form data.rating:', data.rating, typeof data.rating);
       console.log('Extracted values:', { pricePerDay, deposit, rating });
+      console.log('Final rating value:', finalRating);
       
       const updates: Partial<Gear> = {
         ...data,
@@ -798,7 +800,11 @@ export const EditGearPage = () => {
                     <button
                       key={rating}
                       type="button"
-                      onClick={() => setValue('rating', rating)}
+                      onClick={() => {
+                        console.log('Setting rating to:', rating);
+                        setValue('rating', rating, { shouldValidate: true, shouldDirty: true });
+                        console.log('Rating set, current form value:', watch('rating'));
+                      }}
                       className={`text-3xl transition-all ${
                         currentRating >= rating
                           ? 'text-yellow-400'
