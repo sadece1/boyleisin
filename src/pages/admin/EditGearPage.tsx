@@ -507,21 +507,48 @@ export const EditGearPage = () => {
       console.log('Extracted values:', { pricePerDay, deposit, rating: formRating });
       console.log('Final rating value:', finalRating);
       
-      // Ensure all values are explicitly set, not undefined - use formData
+      // CRITICAL: Ensure rating, specifications and categoryId are ALWAYS set (never undefined)
+      // Backend checks for !== undefined, so we must always provide these values
+      const finalRatingValue = finalRating !== undefined && finalRating !== null 
+        ? finalRating 
+        : (ratingValue !== undefined && ratingValue !== null 
+          ? ratingValue 
+          : (currentGear.rating !== undefined && currentGear.rating !== null 
+            ? currentGear.rating 
+            : null));
+      
+      const finalSpecifications = Object.keys(specificationsObj).length > 0 
+        ? specificationsObj 
+        : (currentGear.specifications && Object.keys(currentGear.specifications).length > 0 
+          ? currentGear.specifications 
+          : {});
+      
+      const finalCategoryIdValue = finalCategoryId || currentGear.categoryId || '';
+      
+      console.log('CRITICAL VALUES:', {
+        finalRatingValue,
+        finalSpecifications,
+        finalCategoryIdValue,
+        ratingValue,
+        finalRating,
+        currentGearRating: currentGear.rating
+      });
+      
+      // Ensure all values are explicitly set, NEVER undefined - use formData
       const updates: Partial<Gear> = {
         name: formData.name || data.name || '',
         description: formData.description || data.description || '',
         category: finalCategorySlug || formData.category || data.category || 'other',
-        categoryId: finalCategoryId || currentGear.categoryId, // Keep existing if not provided
+        categoryId: finalCategoryIdValue, // ALWAYS set, never undefined
         images: validImages,
         pricePerDay: pricePerDay,
         deposit: deposit !== null ? deposit : null, // Explicitly set null
         available: (formData.status || data.status) === 'for-sale' || (formData.status || data.status) === 'orderable' ? true : false,
         status: (formData.status || data.status) ?? 'for-sale',
-        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : (currentGear.specifications || {}), // Keep existing or empty object
+        specifications: finalSpecifications, // ALWAYS set, never undefined
         brand: formData.brand || data.brand || '',
         color: formData.color || data.color || '',
-        rating: finalRating !== undefined ? finalRating : (currentGear.rating !== undefined ? currentGear.rating : null), // Explicitly set, keep existing or null
+        rating: finalRatingValue, // ALWAYS set, never undefined (null is valid)
         recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : (currentGear.recommendedProducts || []),
       };
       

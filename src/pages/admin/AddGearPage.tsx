@@ -301,21 +301,43 @@ export const AddGearPage = () => {
       console.log('Extracted values:', { pricePerDay, deposit, rating: formRating });
       console.log('Final rating value:', finalRating);
       
-      // Ensure all values are explicitly set - use formData
+      // CRITICAL: Ensure rating, specifications and categoryId are ALWAYS set (never undefined)
+      // Backend checks for !== undefined, so we must always provide these values
+      const finalRatingValue = finalRating !== undefined && finalRating !== null 
+        ? finalRating 
+        : (ratingValue !== undefined && ratingValue !== null 
+          ? ratingValue 
+          : null);
+      
+      const finalSpecifications = Object.keys(specificationsObj).length > 0 
+        ? specificationsObj 
+        : {};
+      
+      const finalCategoryIdValue = finalCategoryId || '';
+      
+      console.log('CRITICAL VALUES (ADD):', {
+        finalRatingValue,
+        finalSpecifications,
+        finalCategoryIdValue,
+        ratingValue,
+        finalRating
+      });
+      
+      // Ensure all values are explicitly set, NEVER undefined - use formData
       const gearData: Omit<Gear, 'id' | 'createdAt' | 'updatedAt'> = {
         name: formData.name || data.name || '',
         description: formData.description || data.description || '',
         category: finalCategorySlug || formData.category || data.category || 'other',
-        categoryId: finalCategoryId || '',
+        categoryId: finalCategoryIdValue, // ALWAYS set, never undefined
         images: validImages,
         pricePerDay: pricePerDay,
         deposit: deposit !== null ? deposit : null, // Explicitly set null
         available: (formData.status || data.status) === 'for-sale' || (formData.status || data.status) === 'orderable' ? true : false,
         status: (formData.status || data.status) ?? 'for-sale',
-        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : {}, // Always send object, even if empty
+        specifications: finalSpecifications, // ALWAYS set, never undefined (empty object is valid)
         brand: formData.brand || data.brand || '',
         color: formData.color || data.color || '',
-        rating: finalRating !== undefined ? finalRating : null, // Explicitly set, null if not provided
+        rating: finalRatingValue, // ALWAYS set, never undefined (null is valid)
         recommendedProducts: selectedRecommendedProducts.length > 0 ? selectedRecommendedProducts : [],
       };
       

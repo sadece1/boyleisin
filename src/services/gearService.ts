@@ -113,10 +113,10 @@ export const gearService = {
         if (transformedData.specifications && typeof transformedData.specifications === 'object') {
           // Already an object, keep as is
         }
-        // Ensure rating is a number or null
-        // Rating can be 0-5, or null/undefined
-        console.log('Transforming rating in updateGear:', transformedData.rating, typeof transformedData.rating);
-        // Always include rating if it's in the data (even if null)
+        // CRITICAL: Always ensure rating, specifications and category_id are set (never undefined)
+        // Backend checks for !== undefined, so we must always provide these values
+        
+        // Rating: Always set, even if null
         if ('rating' in transformedData) {
           if (transformedData.rating === null || transformedData.rating === '' || transformedData.rating === 'null' || transformedData.rating === undefined) {
             transformedData.rating = null;
@@ -129,24 +129,39 @@ export const gearService = {
           }
           console.log('Transformed rating value:', transformedData.rating);
         } else {
-          console.log('Rating key not in data, not including in update');
+          // If rating key is missing, set it to null explicitly
+          console.warn('⚠️ Rating key missing in data! Setting to null explicitly.');
+          transformedData.rating = null;
         }
         
-        // Ensure specifications is always included if in data
+        // Specifications: Always set, even if empty object
         if ('specifications' in transformedData) {
           if (!transformedData.specifications || typeof transformedData.specifications !== 'object') {
             transformedData.specifications = {};
           }
           console.log('Transformed specifications:', transformedData.specifications);
+        } else {
+          // If specifications key is missing, set it to empty object explicitly
+          console.warn('⚠️ Specifications key missing in data! Setting to empty object explicitly.');
+          transformedData.specifications = {};
         }
         
-        // Ensure category_id is always included if in data
+        // Category_id: Always set
         if ('categoryId' in transformedData && !transformedData.category_id) {
           transformedData.category_id = transformedData.categoryId;
           delete transformedData.categoryId;
         }
         if ('category_id' in transformedData) {
           console.log('Transformed category_id:', transformedData.category_id);
+        } else {
+          // If category_id key is missing, try to get it from categoryId
+          if ('categoryId' in transformedData) {
+            transformedData.category_id = transformedData.categoryId;
+            delete transformedData.categoryId;
+            console.log('Converted categoryId to category_id:', transformedData.category_id);
+          } else {
+            console.warn('⚠️ Category_id key missing in data!');
+          }
         }
       }
 
