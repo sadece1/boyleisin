@@ -63,22 +63,14 @@ export async function syncCategoriesToBackend(): Promise<{
       } else {
         try {
           console.log(`➕ Creating root category: "${frontendCat.name}" (${frontendCat.slug})`);
-          // Only include description and icon if they are non-empty strings
-          const categoryData: any = {
+          const response = await api.post<{ success: boolean; data: BackendCategory }>('/categories', {
             name: frontendCat.name,
             slug: frontendCat.slug,
+            description: frontendCat.description && frontendCat.description.trim() ? frontendCat.description.trim() : null,
             parent_id: null,
+            icon: frontendCat.icon && frontendCat.icon.trim() ? frontendCat.icon.trim() : null,
             order: frontendCat.order || 0,
-          };
-          // Only add description if it's a non-empty string
-          if (frontendCat.description && frontendCat.description.trim().length > 0) {
-            categoryData.description = frontendCat.description.trim();
-          }
-          // Only add icon if it's a non-empty string
-          if (frontendCat.icon && frontendCat.icon.trim().length > 0) {
-            categoryData.icon = frontendCat.icon.trim();
-          }
-          const response = await api.post<{ success: boolean; data: BackendCategory }>('/categories', categoryData);
+          });
 
           if (response.data.success && response.data.data) {
             const createdCategory = response.data.data;
@@ -128,22 +120,14 @@ export async function syncCategoriesToBackend(): Promise<{
         } else {
           try {
             console.log(`➕ Creating category: "${frontendCat.name}" (${frontendCat.slug}) with parent ${parentBackendId}`);
-            // Only include description and icon if they are non-empty strings
-            const categoryData: any = {
+            const response = await api.post<{ success: boolean; data: BackendCategory }>('/categories', {
               name: frontendCat.name,
               slug: frontendCat.slug,
+              description: frontendCat.description && frontendCat.description.trim() ? frontendCat.description.trim() : null,
               parent_id: parentBackendId,
+              icon: frontendCat.icon && frontendCat.icon.trim() ? frontendCat.icon.trim() : null,
               order: frontendCat.order || 0,
-            };
-            // Only add description if it's a non-empty string
-            if (frontendCat.description && frontendCat.description.trim().length > 0) {
-              categoryData.description = frontendCat.description.trim();
-            }
-            // Only add icon if it's a non-empty string
-            if (frontendCat.icon && frontendCat.icon.trim().length > 0) {
-              categoryData.icon = frontendCat.icon.trim();
-            }
-            const response = await api.post<{ success: boolean; data: BackendCategory }>('/categories', categoryData);
+            });
 
             if (response.data.success && response.data.data) {
               const createdCategory = response.data.data;

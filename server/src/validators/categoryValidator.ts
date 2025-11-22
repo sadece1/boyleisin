@@ -15,9 +15,9 @@ export const createCategorySchema = Joi.object({
     .messages({
       'string.pattern.base': 'Slug must contain only lowercase letters, numbers, and hyphens',
     }),
-  description: Joi.string().max(500).trim().allow(null, '').optional(),
-  parent_id: Joi.string().uuid().allow(null).optional(),
-  icon: Joi.string().max(50).trim().allow(null, '').optional(),
+  description: Joi.string().max(500).trim().allow('', null).optional(),
+  parent_id: Joi.string().uuid().allow(null, '').optional(),
+  icon: Joi.string().max(50).trim().allow('', null).optional(),
   order: Joi.number().integer().min(0).optional().default(0),
 });
 
@@ -29,9 +29,9 @@ export const updateCategorySchema = Joi.object({
     .trim()
     .pattern(/^[a-z0-9-]+$/)
     .optional(),
-  description: Joi.string().max(500).trim().allow(null, '').optional(),
-  parent_id: Joi.string().uuid().allow(null).optional(),
-  icon: Joi.string().max(50).trim().allow(null, '').optional(),
+  description: Joi.string().max(500).trim().allow('', null).optional(),
+  parent_id: Joi.string().uuid().allow(null, '').optional(),
+  icon: Joi.string().max(50).trim().allow('', null).optional(),
   order: Joi.number().integer().min(0).optional(),
 });
 
