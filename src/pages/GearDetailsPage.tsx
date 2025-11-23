@@ -305,8 +305,16 @@ export const GearDetailsPage = () => {
         image={gear.images && gear.images.length > 0 ? gear.images[0] : undefined}
       />
 
-      <div className="min-h-screen bg-white dark:bg-gray-900 py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-white dark:bg-gray-900 py-6" style={{ overflowX: 'hidden', width: '100%' }}>
+        <div 
+          className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+          style={{
+            width: '100%',
+            maxWidth: '100%',
+            overflowX: 'hidden',
+            boxSizing: 'border-box',
+          }}
+        >
           {/* Breadcrumb */}
           <nav className="mb-4 flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
             <Link to="/" className="hover:text-gray-900 dark:hover:text-white transition-colors">
