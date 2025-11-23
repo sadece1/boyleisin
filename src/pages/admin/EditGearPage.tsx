@@ -367,7 +367,7 @@ export const EditGearPage = () => {
         }
       }
     }
-  }, [currentGear?.specifications, currentGear?.id, currentGear?.updated_at]); // Include updated_at to detect when gear is updated
+  }, [currentGear?.specifications, currentGear?.id, currentGear?.updatedAt]); // Include updatedAt to detect when gear is updated
 
   // CRITICAL: Separate useEffect to ALWAYS update category selection when currentGear.categoryId changes
   useEffect(() => {
@@ -450,7 +450,7 @@ export const EditGearPage = () => {
       };
       loadCategoryHierarchy();
     }
-  }, [currentGear?.categoryId, currentGear?.id, currentGear?.updated_at, setValue]); // Include updated_at to detect when gear is updated
+  }, [currentGear?.categoryId, currentGear?.id, currentGear?.updatedAt, setValue]); // Include updatedAt to detect when gear is updated
 
   // Ana kategori değiştiğinde alt kategorileri güncelle
   useEffect(() => {
