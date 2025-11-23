@@ -65,21 +65,27 @@ export const EditGearPage = () => {
     loadRootCategories();
     
     // Load brands and colors
-    try {
-      const allBrands = brandService.getAllBrands();
-      setBrands(Array.isArray(allBrands) ? allBrands.map(b => b.name) : []);
-    } catch (error) {
-      console.error('Failed to load brands:', error);
-      setBrands([]);
-    }
+    const loadBrandsAndColors = async () => {
+      try {
+        const allBrands = await brandService.getAllBrands();
+        const brandNames = Array.isArray(allBrands) ? allBrands.map(b => b.name).filter(Boolean) : [];
+        console.log('✅ Loaded brands:', brandNames.length, brandNames);
+        setBrands(brandNames);
+      } catch (error) {
+        console.error('❌ Failed to load brands:', error);
+        setBrands([]);
+      }
+      
+      try {
+        const allColors = colorService.getAllColors();
+        setColors(Array.isArray(allColors) ? allColors.map(c => c.name) : []);
+      } catch (error) {
+        console.error('Failed to load colors:', error);
+        setColors([]);
+      }
+    };
     
-    try {
-      const allColors = colorService.getAllColors();
-      setColors(Array.isArray(allColors) ? allColors.map(c => c.name) : []);
-    } catch (error) {
-      console.error('Failed to load colors:', error);
-      setColors([]);
-    }
+    loadBrandsAndColors();
     
     // Load all gear for recommended products selection
     const loadAllGear = async () => {
@@ -96,9 +102,11 @@ export const EditGearPage = () => {
     const handleBrandsUpdate = async () => {
       try {
         const updatedBrands = await brandService.getAllBrands();
-        setBrands(Array.isArray(updatedBrands) ? updatedBrands.map(b => b.name) : []);
+        const brandNames = Array.isArray(updatedBrands) ? updatedBrands.map(b => b.name).filter(Boolean) : [];
+        console.log('✅ Updated brands:', brandNames.length, brandNames);
+        setBrands(brandNames);
       } catch (error) {
-        console.error('Failed to update brands:', error);
+        console.error('❌ Failed to update brands:', error);
         setBrands([]);
       }
     };
@@ -1008,22 +1016,32 @@ export const EditGearPage = () => {
                 placeholder="Marka adı girin (ör: Coleman, MSR...)"
               />
               <datalist id="brands-list">
-                {Array.isArray(brands) && brands.map((brand) => (
-                  <option key={brand} value={brand} />
-                ))}
+                {Array.isArray(brands) && brands.length > 0 ? (
+                  brands.map((brand) => (
+                    <option key={brand} value={brand} />
+                  ))
+                ) : (
+                  <option value="Marka bulunamadı" />
+                )}
               </datalist>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {Array.isArray(brands) && brands.slice(0, 10).map((brand) => (
-                  <button
-                    key={brand}
-                    type="button"
-                    onClick={() => setValue('brand', brand)}
-                    className="px-3 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    {brand}
-                  </button>
-                ))}
-              </div>
+              {Array.isArray(brands) && brands.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {brands.map((brand) => (
+                    <button
+                      key={brand}
+                      type="button"
+                      onClick={() => setValue('brand', brand)}
+                      className="px-3 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      {brand}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Marka yükleniyor...
+                </div>
+              )}
             </div>
 
             {/* Renk */}

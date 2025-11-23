@@ -68,9 +68,11 @@ export const AddGearPage = () => {
     const loadBrandsAndColors = async () => {
       try {
         const allBrands = await brandService.getAllBrands();
-        setBrands(Array.isArray(allBrands) ? allBrands.map(b => b.name) : []);
+        const brandNames = Array.isArray(allBrands) ? allBrands.map(b => b.name).filter(Boolean) : [];
+        console.log('✅ Loaded brands:', brandNames.length, brandNames);
+        setBrands(brandNames);
       } catch (error) {
-        console.error('Failed to load brands:', error);
+        console.error('❌ Failed to load brands:', error);
         setBrands([]);
       }
       
@@ -100,9 +102,11 @@ export const AddGearPage = () => {
     const handleBrandsUpdate = async () => {
       try {
         const updatedBrands = await brandService.getAllBrands();
-        setBrands(Array.isArray(updatedBrands) ? updatedBrands.map(b => b.name) : []);
+        const brandNames = Array.isArray(updatedBrands) ? updatedBrands.map(b => b.name).filter(Boolean) : [];
+        console.log('✅ Updated brands:', brandNames.length, brandNames);
+        setBrands(brandNames);
       } catch (error) {
-        console.error('Failed to update brands:', error);
+        console.error('❌ Failed to update brands:', error);
         setBrands([]);
       }
     };
@@ -588,22 +592,32 @@ export const AddGearPage = () => {
                 placeholder="Marka adı girin (ör: Coleman, MSR...)"
               />
               <datalist id="brands-list">
-                {brands.map((brand) => (
-                  <option key={brand} value={brand} />
-                ))}
+                {Array.isArray(brands) && brands.length > 0 ? (
+                  brands.map((brand) => (
+                    <option key={brand} value={brand} />
+                  ))
+                ) : (
+                  <option value="Marka bulunamadı" />
+                )}
               </datalist>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {brands.slice(0, 10).map((brand) => (
-                  <button
-                    key={brand}
-                    type="button"
-                    onClick={() => setValue('brand', brand)}
-                    className="px-3 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    {brand}
-                  </button>
-                ))}
-              </div>
+              {Array.isArray(brands) && brands.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {brands.map((brand) => (
+                    <button
+                      key={brand}
+                      type="button"
+                      onClick={() => setValue('brand', brand)}
+                      className="px-3 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      {brand}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Marka yükleniyor...
+                </div>
+              )}
             </div>
 
             {/* Renk */}
