@@ -290,88 +290,7 @@ export const EditGearPage = () => {
       console.log('⭐ [EditGearPage] Setting rating STATE to:', finalRating, 'from gear:', gearRating);
       console.log('⭐ [EditGearPage] Rating state after set:', finalRating, typeof finalRating);
       
-      // Kategori hiyerarşisini belirle
-      const categoryId = currentGear.categoryId;
-      if (categoryId) {
-        const loadCategoryHierarchy = async () => {
-          try {
-            const category = await categoryManagementService.getCategoryById(categoryId);
-            if (category) {
-              // Parent kategoriyi bul
-              let current: Category | null = category;
-              const path: Category[] = [];
-              
-              while (current) {
-                path.unshift(current);
-                if (current.parentId) {
-                  current = await categoryManagementService.getCategoryById(current.parentId);
-                } else {
-                  break;
-                }
-              }
-              
-              console.log('Category hierarchy path:', path.map(c => ({ id: c.id, name: c.name, parentId: c.parentId })));
-              
-              if (path.length > 0) {
-                // Önce tüm alt kategorileri yükle, sonra state'leri set et
-                const rootCategory = path[0];
-                
-                // Ana kategoriyi set et
-                setSelectedParentCategory(rootCategory.id);
-                
-                // Alt kategorileri yükle
-                if (path.length > 1) {
-                  const subCats = await categoryManagementService.getChildCategories(rootCategory.id);
-                  setSubCategories(subCats);
-                  
-                  // Alt kategoriyi set et
-                  const subCategory = path[1];
-                  setSelectedSubCategory(subCategory.id);
-                  
-                  // Final kategorileri yükle
-                  if (path.length > 2) {
-                    const finalCats = await categoryManagementService.getChildCategories(subCategory.id);
-                    setFinalCategories(finalCats);
-                    
-                    // Final kategoriyi set et
-                    const finalCategory = path[2];
-                    setSelectedFinalCategory(finalCategory.id);
-                  } else {
-                    // Eğer final kategori yoksa, alt kategoriyi final olarak kullan
-                    setSelectedFinalCategory('');
-                    setFinalCategories([]);
-                  }
-                } else {
-                  // Eğer alt kategori yoksa, ana kategoriyi kullan
-                  setSelectedSubCategory('');
-                  setSubCategories([]);
-                  setSelectedFinalCategory('');
-                  setFinalCategories([]);
-                }
-                
-                // Form value'larını set et
-                const finalCategory = path[path.length - 1];
-                setValue('categoryId', finalCategory.id, { shouldValidate: false, shouldDirty: false });
-                setValue('category', finalCategory.slug, { shouldValidate: false, shouldDirty: false });
-                setSelectedCategoryName(`${finalCategory.icon || ''} ${finalCategory.name}`);
-                
-                console.log('Category hierarchy loaded:', {
-                  parent: path[0]?.name,
-                  sub: path[1]?.name,
-                  final: path[2]?.name || path[path.length - 1]?.name,
-                });
-              }
-            }
-          } catch (error) {
-            console.error('Failed to load category hierarchy:', error);
-          }
-        };
-        loadCategoryHierarchy().finally(() => {
-          setIsLoadingCategoryHierarchy(false);
-        });
-      } else {
-        setIsLoadingCategoryHierarchy(false);
-      }
+      // Category ve specifications yükleme artık ayrı useEffect'lerde yapılıyor
     }
   }, [currentGear, reset, setValue]);
 
@@ -411,6 +330,120 @@ export const EditGearPage = () => {
       }
     }
   }, [currentGear?.rating, currentGear?.id, ratingState]); // Only depend on rating and id, not entire currentGear
+
+  // CRITICAL: Separate useEffect to ALWAYS update specifications state when currentGear.specifications changes
+  useEffect(() => {
+    if (currentGear && currentGear.specifications !== undefined) {
+      if (currentGear.specifications && Object.keys(currentGear.specifications).length > 0) {
+        const specsArray = Object.entries(currentGear.specifications).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }));
+        // Only update if different to avoid infinite loops
+        const currentSpecsStr = JSON.stringify(specificationsState);
+        const newSpecsStr = JSON.stringify(specsArray);
+        if (currentSpecsStr !== newSpecsStr) {
+          console.log('🔄 [EditGearPage] Specifications state sync:', {
+            currentState: specificationsState,
+            newState: specsArray,
+            gearSpecs: currentGear.specifications
+          });
+          setSpecificationsState(specsArray);
+          setSpecifications(specsArray);
+        }
+      } else {
+        // Empty specifications - set to empty array with one empty field
+        if (specificationsState.length !== 1 || specificationsState[0].key !== '' || specificationsState[0].value !== '') {
+          console.log('🔄 [EditGearPage] Specifications cleared');
+          setSpecificationsState([{ key: '', value: '' }]);
+          setSpecifications([{ key: '', value: '' }]);
+        }
+      }
+    }
+  }, [currentGear?.specifications, currentGear?.id]); // Only depend on specifications and id
+
+  // CRITICAL: Separate useEffect to ALWAYS update category selection when currentGear.categoryId changes
+  useEffect(() => {
+    if (currentGear && currentGear.categoryId && !isLoadingCategoryHierarchy) {
+      const categoryId = currentGear.categoryId;
+      const loadCategoryHierarchy = async () => {
+        try {
+          setIsLoadingCategoryHierarchy(true);
+          const category = await categoryManagementService.getCategoryById(categoryId);
+          if (category) {
+            // Parent kategoriyi bul
+            let current: Category | null = category;
+            const path: Category[] = [];
+            
+            while (current) {
+              path.unshift(current);
+              if (current.parentId) {
+                current = await categoryManagementService.getCategoryById(current.parentId);
+              } else {
+                break;
+              }
+            }
+            
+            if (path.length > 0) {
+              const rootCategory = path[0];
+              
+              // Ana kategoriyi set et
+              if (selectedParentCategory !== rootCategory.id) {
+                setSelectedParentCategory(rootCategory.id);
+              }
+              
+              // Alt kategorileri yükle
+              if (path.length > 1) {
+                const subCats = await categoryManagementService.getChildCategories(rootCategory.id);
+                setSubCategories(subCats);
+                
+                const subCategory = path[1];
+                if (selectedSubCategory !== subCategory.id) {
+                  setSelectedSubCategory(subCategory.id);
+                }
+                
+                // Final kategorileri yükle
+                if (path.length > 2) {
+                  const finalCats = await categoryManagementService.getChildCategories(subCategory.id);
+                  setFinalCategories(finalCats);
+                  
+                  const finalCategory = path[2];
+                  if (selectedFinalCategory !== finalCategory.id) {
+                    setSelectedFinalCategory(finalCategory.id);
+                  }
+                } else {
+                  setSelectedFinalCategory('');
+                  setFinalCategories([]);
+                }
+              } else {
+                setSelectedSubCategory('');
+                setSubCategories([]);
+                setSelectedFinalCategory('');
+                setFinalCategories([]);
+              }
+              
+              // Form value'larını set et
+              const finalCategory = path[path.length - 1];
+              setValue('categoryId', finalCategory.id, { shouldValidate: false, shouldDirty: false });
+              setValue('category', finalCategory.slug, { shouldValidate: false, shouldDirty: false });
+              setSelectedCategoryName(`${finalCategory.icon || ''} ${finalCategory.name}`);
+              
+              console.log('🔄 [EditGearPage] Category hierarchy synced:', {
+                parent: path[0]?.name,
+                sub: path[1]?.name,
+                final: path[2]?.name || path[path.length - 1]?.name,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to sync category hierarchy:', error);
+        } finally {
+          setIsLoadingCategoryHierarchy(false);
+        }
+      };
+      loadCategoryHierarchy();
+    }
+  }, [currentGear?.categoryId, currentGear?.id, setValue]); // Only depend on categoryId and id
 
   // Ana kategori değiştiğinde alt kategorileri güncelle
   useEffect(() => {
