@@ -559,8 +559,23 @@ export const AdminUserOrdersPage = () => {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 max-w-xs">
+                            <div 
+                              className="text-sm text-gray-900 dark:text-white"
+                              style={{
+                                wordBreak: 'break-word',
+                                overflowWrap: 'break-word',
+                                overflow: 'hidden',
+                                overflowX: 'hidden',
+                                overflowY: 'hidden',
+                                maxWidth: '100%',
+                                width: '100%',
+                                minWidth: 0,
+                                boxSizing: 'border-box',
+                                whiteSpace: 'normal',
+                                display: 'block',
+                              }}
+                            >
                               {gear?.name || 'Ürün yükleniyor...'}
                             </div>
                           </td>

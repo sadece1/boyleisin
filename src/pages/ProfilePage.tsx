@@ -246,8 +246,23 @@ export const ProfilePage = () => {
                           {/* Order Details */}
                           <div className="flex-1">
                             <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                              <div className="flex-1 min-w-0 pr-4">
+                                <h3 
+                                  className="text-lg font-semibold text-gray-900 dark:text-white mb-1"
+                                  style={{
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    overflow: 'hidden',
+                                    overflowX: 'hidden',
+                                    overflowY: 'hidden',
+                                    maxWidth: '100%',
+                                    width: '100%',
+                                    minWidth: 0,
+                                    boxSizing: 'border-box',
+                                    whiteSpace: 'normal',
+                                    display: 'block',
+                                  }}
+                                >
                                   {gear?.name || 'Ürün bilgisi yükleniyor...'}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
