@@ -11,6 +11,7 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Send cookies (HttpOnly cookies) with requests
 });
 
 // Request interceptor for auth token
@@ -21,6 +22,9 @@ api.interceptors.request.use(
       delete config.headers['Content-Type'];
     }
     
+    // HttpOnly cookies are automatically sent by the browser, no need to set Authorization header
+    // But we keep backward compatibility: if token exists in localStorage, use it
+    // (for migration period, can be removed later)
     const token = localStorage.getItem('auth-storage');
     if (token) {
       try {
@@ -32,6 +36,7 @@ api.interceptors.request.use(
         // Invalid token format
       }
     }
+    // Note: HttpOnly cookies are sent automatically by browser when withCredentials: true
     return config;
   },
   (error) => {

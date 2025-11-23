@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
@@ -100,6 +101,9 @@ app.use(cors(corsOptions));
 
 // Compression middleware
 app.use(compression());
+
+// Cookie parser middleware (for HttpOnly cookies)
+app.use(cookieParser());
 
 // Body parsing middleware with size limits
 app.use(express.json({ 

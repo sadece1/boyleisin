@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, LoginForm, RegisterForm } from '@/types';
 import { authService } from '@/services/authService';
+import api from '@/services/api';
 
 interface AuthState {
   user: User | null;
@@ -31,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await authService.login(credentials);
           set({
             user: response.user,
-            token: response.token,
+            token: null, // Token is in HttpOnly cookie, not stored in state
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -52,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await authService.register(data);
           set({
             user: response.user,
-            token: response.token,
+            token: null, // Token is in HttpOnly cookie, not stored in state
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -67,13 +68,24 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-        });
+      logout: async () => {
+        try {
+          // Call logout endpoint to clear HttpOnly cookies on server
+          await api.post('/auth/logout');
+        } catch (error) {
+          // Even if logout fails, clear local state
+          console.error('Logout error:', error);
+        } finally {
+          // Clear local state
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null,
+          });
+          // Clear localStorage (for backward compatibility)
+          localStorage.removeItem('auth-storage');
+        }
       },
 
       updateUser: (user: User) => {
@@ -88,9 +100,10 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
+        // Only persist user and isAuthenticated, not token (token is in HttpOnly cookie)
         user: state.user,
-        token: state.token,
         isAuthenticated: state.isAuthenticated,
+        // token is NOT persisted - it's in HttpOnly cookie
       }),
     }
   )

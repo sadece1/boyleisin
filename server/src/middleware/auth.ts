@@ -16,9 +16,22 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    // Try to get token from cookie first (more secure), then from Authorization header (backward compatibility)
+    let token: string | undefined;
+    
+    // Check cookie first (HttpOnly cookie is more secure)
+    if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+    // Fallback to Authorization header for backward compatibility
+    else {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       logger.warn('Authentication failed: No token provided', {
         url: req.originalUrl,
         method: req.method,
@@ -29,8 +42,6 @@ export const authenticate = async (
       });
       return;
     }
-
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     try {
       const decoded = jwt.verify(token, jwtConfig.secret) as UserPayload;
@@ -106,10 +117,19 @@ export const optionalAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    // Try cookie first, then Authorization header
+    let token: string | undefined;
+    
+    if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    } else {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
+    if (token) {
       try {
         const decoded = jwt.verify(token, jwtConfig.secret) as UserPayload;
         req.user = decoded;

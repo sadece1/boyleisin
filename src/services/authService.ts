@@ -51,18 +51,18 @@ export const authService = {
     try {
       const response = await api.post<{ success: boolean; data: { user: any; token: string } }>('/auth/login', credentials);
       
-      // Backend returns { success: true, data: { user, token } }
+      // Backend returns { success: true, data: { user } } (token is in HttpOnly cookie)
       if (response.data.success && response.data.data) {
         return {
           user: transformUser(response.data.data.user),
-          token: response.data.data.token,
+          token: null, // Token is in HttpOnly cookie, not accessible via JavaScript
         };
       }
       
       // Fallback if format is different
       return {
         user: transformUser(response.data.data?.user || response.data),
-        token: response.data.data?.token || (response.data as any).token,
+        token: null, // Token is in HttpOnly cookie
       };
     } catch (error) {
       // Mock login for development
@@ -89,13 +89,13 @@ export const authService = {
     if (response.data.success && response.data.data) {
       return {
         user: transformUser(response.data.data.user),
-        token: response.data.data.token,
+        token: null, // Token is in HttpOnly cookie, not accessible via JavaScript
       };
     }
     
     return {
       user: transformUser(response.data.data?.user || response.data),
-      token: response.data.data?.token || (response.data as any).token,
+      token: null, // Token is in HttpOnly cookie
     };
   },
 

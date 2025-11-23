@@ -19,9 +19,14 @@ export interface UserPayload {
   role: 'user' | 'admin';
 }
 
-// Request with authenticated user
+// Request with authenticated user and cookies
 export interface AuthRequest extends Request {
   user?: UserPayload;
+  cookies?: {
+    token?: string;
+    refreshToken?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 // Campsite Types

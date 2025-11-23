@@ -27,6 +27,16 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   const result = await registerUser(name, email, password, req);
 
+  // Set HttpOnly cookie for token (more secure than localStorage)
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie('token', result.token, {
+    httpOnly: true, // Prevents XSS attacks - JavaScript cannot access this cookie
+    secure: isProduction, // Only send over HTTPS in production
+    sameSite: 'strict', // CSRF protection
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (matches JWT expiration)
+    path: '/', // Available for all routes
+  });
+
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
@@ -36,7 +46,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
         created_at: parseDate(result.user.created_at),
         updated_at: parseDate(result.user.updated_at),
       },
-      token: result.token,
+      // Don't send token in response body for security (it's in HttpOnly cookie)
+      // token: result.token, // Removed for security
     },
   });
 });
@@ -55,6 +66,27 @@ export const login = [
       // Clear failed attempts on successful login
       clearLoginAttempts(req);
 
+      // Set HttpOnly cookie for token (more secure than localStorage)
+      const isProduction = process.env.NODE_ENV === 'production';
+      res.cookie('token', result.token, {
+        httpOnly: true, // Prevents XSS attacks - JavaScript cannot access this cookie
+        secure: isProduction, // Only send over HTTPS in production
+        sameSite: 'strict', // CSRF protection
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (matches JWT expiration)
+        path: '/', // Available for all routes
+      });
+
+      // Set refresh token in cookie as well (optional, can also be HttpOnly)
+      if (result.refreshToken) {
+        res.cookie('refreshToken', result.refreshToken, {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: 'strict',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+          path: '/',
+        });
+      }
+
       res.status(200).json({
         success: true,
         message: 'Login successful',
@@ -64,8 +96,9 @@ export const login = [
             created_at: parseDate(result.user.created_at),
             updated_at: parseDate(result.user.updated_at),
           },
-          token: result.token,
-          refreshToken: result.refreshToken,
+          // Don't send tokens in response body for security (they're in HttpOnly cookies)
+          // token: result.token, // Removed for security
+          // refreshToken: result.refreshToken, // Removed for security
         },
       });
     } catch (error: any) {
@@ -145,7 +178,8 @@ export const updateProfile = asyncHandler(
  * Refresh access token
  */
 export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  // Get refresh token from cookie or request body (backward compatibility)
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
   if (!refreshToken) {
     res.status(400).json({
@@ -157,13 +191,34 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
 
   const result = await refreshAccessToken(refreshToken);
 
+  // Set new tokens in HttpOnly cookies
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie('token', result.token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+  });
+
+  if (result.refreshToken) {
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: '/',
+    });
+  }
+
   res.status(200).json({
     success: true,
     message: 'Token refreshed successfully',
-    data: {
-      token: result.token,
-      refreshToken: result.refreshToken,
-    },
+    // Don't send tokens in response body
+    // data: {
+    //   token: result.token,
+    //   refreshToken: result.refreshToken,
+    // },
   });
 });
 
@@ -179,12 +234,14 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const { refreshToken } = req.body;
-  const authHeader = req.headers.authorization;
-  const accessToken = authHeader?.substring(7);
+  // Get tokens from cookies or request body (backward compatibility)
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+  const accessToken = req.cookies?.token || req.headers.authorization?.substring(7);
 
   // Revoke refresh token
-  await logoutUser(req.user.id, refreshToken);
+  if (refreshToken) {
+    await logoutUser(req.user.id, refreshToken);
+  }
 
   // Blacklist access token if provided
   if (accessToken) {
@@ -192,6 +249,20 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
     const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
     blacklistToken(accessToken, expiresIn);
   }
+
+  // Clear HttpOnly cookies
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
 
   res.status(200).json({
     success: true,
