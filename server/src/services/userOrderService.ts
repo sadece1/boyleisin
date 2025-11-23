@@ -112,23 +112,25 @@ export const updateUserOrder = async (
   }
   if (data.price !== undefined) {
     updateFields.push('price = ?');
-    updateValues.push(data.price);
+    // Ensure price is a number
+    const priceValue = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+    updateValues.push(isNaN(priceValue) ? 0 : priceValue);
   }
   if (data.public_note !== undefined) {
     updateFields.push('public_note = ?');
-    updateValues.push(data.public_note);
+    updateValues.push(data.public_note === '' ? null : data.public_note);
   }
   if (data.private_note !== undefined) {
     updateFields.push('private_note = ?');
-    updateValues.push(data.private_note);
+    updateValues.push(data.private_note === '' ? null : data.private_note);
   }
   if (data.shipped_date !== undefined) {
     updateFields.push('shipped_date = ?');
-    updateValues.push(data.shipped_date);
+    updateValues.push(data.shipped_date === '' ? null : data.shipped_date);
   }
   if (data.shipped_time !== undefined) {
     updateFields.push('shipped_time = ?');
-    updateValues.push(data.shipped_time);
+    updateValues.push(data.shipped_time === '' ? null : data.shipped_time);
   }
 
   if (updateFields.length === 0) {
@@ -139,17 +141,25 @@ export const updateUserOrder = async (
     return order;
   }
 
+  // Add updated_at timestamp
   updateFields.push('updated_at = CURRENT_TIMESTAMP');
+  // Add id at the end for WHERE clause
   updateValues.push(id);
 
-  await pool.execute(
-    `UPDATE user_orders SET ${updateFields.join(', ')} WHERE id = ?`,
-    updateValues
-  );
+  const query = `UPDATE user_orders SET ${updateFields.join(', ')} WHERE id = ?`;
+  
+  try {
+    await pool.execute(query, updateValues);
+  } catch (error: any) {
+    console.error('Error updating user order:', error);
+    console.error('Query:', query);
+    console.error('Values:', updateValues);
+    throw new Error(`Failed to update user order: ${error.message || 'Unknown error'}`);
+  }
 
   const order = await getUserOrderById(id);
   if (!order) {
-    throw new Error('User order not found');
+    throw new Error('User order not found after update');
   }
 
   return order;

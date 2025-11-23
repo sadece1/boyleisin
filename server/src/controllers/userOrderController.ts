@@ -127,15 +127,38 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Authentication required' });
+    return;
+  }
+
   const { id } = req.params;
-  const order = await updateUserOrder(id, {
-    status: req.body.status,
-    price: req.body.price,
-    public_note: req.body.publicNote !== undefined ? req.body.publicNote : undefined,
-    private_note: req.body.privateNote !== undefined ? req.body.privateNote : undefined,
-    shipped_date: req.body.shippedDate !== undefined ? req.body.shippedDate : undefined,
-    shipped_time: req.body.shippedTime !== undefined ? req.body.shippedTime : undefined,
-  });
+  
+  // Prepare update data, only include fields that are provided
+  const updateData: any = {};
+  
+  if (req.body.status !== undefined) {
+    updateData.status = req.body.status;
+  }
+  if (req.body.price !== undefined) {
+    // Ensure price is a number
+    const priceValue = typeof req.body.price === 'string' ? parseFloat(req.body.price) : req.body.price;
+    updateData.price = isNaN(priceValue) ? 0 : priceValue;
+  }
+  if (req.body.publicNote !== undefined) {
+    updateData.public_note = req.body.publicNote === '' ? null : req.body.publicNote;
+  }
+  if (req.body.privateNote !== undefined) {
+    updateData.private_note = req.body.privateNote === '' ? null : req.body.privateNote;
+  }
+  if (req.body.shippedDate !== undefined) {
+    updateData.shipped_date = req.body.shippedDate === '' ? null : req.body.shippedDate;
+  }
+  if (req.body.shippedTime !== undefined) {
+    updateData.shipped_time = req.body.shippedTime === '' ? null : req.body.shippedTime;
+  }
+
+  const order = await updateUserOrder(id, updateData);
 
   res.status(200).json({
     success: true,
