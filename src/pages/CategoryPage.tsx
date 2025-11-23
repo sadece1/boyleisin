@@ -503,18 +503,18 @@ export const CategoryPage = () => {
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-                {categoryInfo.icon && <span className="mr-3">{categoryInfo.icon}</span>}
-                {categoryInfo.name}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white flex-1 min-w-0">
+                {categoryInfo.icon && <span className="mr-2 sm:mr-3 flex-shrink-0">{categoryInfo.icon}</span>}
+                <span className="break-words">{categoryInfo.name}</span>
               </h1>
               {/* Mobile Filter Button */}
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="lg:hidden px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                className="lg:hidden px-3 sm:px-4 py-2 text-sm sm:text-base bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors whitespace-nowrap flex-shrink-0 self-start sm:self-auto"
               >
                 {isFilterOpen ? 'Filtreleri Gizle' : 'Filtreler'}
               </button>
