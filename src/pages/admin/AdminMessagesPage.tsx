@@ -13,6 +13,31 @@ export const AdminMessagesPage = () => {
   useEffect(() => {
     fetchMessages(1);
   }, [fetchMessages]);
+
+  // Mark all unread messages as read when page loads
+  useEffect(() => {
+    const markAllUnreadAsRead = async () => {
+      const unreadMessages = messages.filter(m => !m.read);
+      if (unreadMessages.length > 0) {
+        console.log(`Marking ${unreadMessages.length} unread messages as read...`);
+        for (const message of unreadMessages) {
+          try {
+            await markAsRead(message.id);
+          } catch (error) {
+            console.error(`Failed to mark message ${message.id} as read:`, error);
+          }
+        }
+        // Refresh messages after marking all as read
+        setTimeout(() => {
+          fetchMessages(1);
+        }, 500);
+      }
+    };
+
+    if (messages.length > 0) {
+      markAllUnreadAsRead();
+    }
+  }, [messages.length]); // Only run when messages are first loaded
   
   // Update selectedMessage when messages list updates
   useEffect(() => {

@@ -36,7 +36,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: routes.adminBrands, label: 'Markalar', icon: '🏭', badge: null },
     { path: routes.adminReferences, label: 'Referanslar', icon: '📸', badge: null },
     { path: routes.adminColors, label: 'Renkler', icon: '🎨', badge: null },
-    { path: routes.adminUsers, label: 'Kullanıcılar', icon: '👥', badge: notifications.users > 0 ? notifications.users : null },
+    { path: routes.adminUsers, label: 'Kullanıcılar', icon: '👥', badge: null },
     { path: routes.adminUserOrders, label: 'Sipariş Yönetimi', icon: '📦', badge: notifications.orders > 0 ? notifications.orders : null },
     { path: routes.adminMessages, label: 'Mesajlar', icon: '💬', badge: notifications.messages > 0 ? notifications.messages : null },
     { path: routes.adminNewsletters, label: 'Bülten Abonelikleri', icon: '📧', badge: notifications.newsletters > 0 ? notifications.newsletters : null },
