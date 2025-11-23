@@ -98,6 +98,8 @@ export const gearService = {
         rating: parsedRating, // Use the parsed rating
         categoryId: gearData.category_id ?? gearData.categoryId,
         recommendedProducts: gearData.recommended_products ?? gearData.recommendedProducts ?? [],
+        updatedAt: gearData.updated_at ?? gearData.updatedAt, // Transform updated_at to updatedAt
+        createdAt: gearData.created_at ?? gearData.createdAt, // Transform created_at to createdAt
       };
       
       console.log('🔍 [getGearById] Final transformed rating:', transformed.rating, typeof transformed.rating);
