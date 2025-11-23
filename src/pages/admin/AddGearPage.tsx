@@ -65,21 +65,25 @@ export const AddGearPage = () => {
     loadRootCategories();
     
     // Load brands and colors
-    try {
-      const allBrands = brandService.getAllBrands();
-      setBrands(Array.isArray(allBrands) ? allBrands.map(b => b.name) : []);
-    } catch (error) {
-      console.error('Failed to load brands:', error);
-      setBrands([]);
-    }
+    const loadBrandsAndColors = async () => {
+      try {
+        const allBrands = await brandService.getAllBrands();
+        setBrands(Array.isArray(allBrands) ? allBrands.map(b => b.name) : []);
+      } catch (error) {
+        console.error('Failed to load brands:', error);
+        setBrands([]);
+      }
+      
+      try {
+        const allColors = colorService.getAllColors();
+        setColors(Array.isArray(allColors) ? allColors.map(c => c.name) : []);
+      } catch (error) {
+        console.error('Failed to load colors:', error);
+        setColors([]);
+      }
+    };
     
-    try {
-      const allColors = colorService.getAllColors();
-      setColors(Array.isArray(allColors) ? allColors.map(c => c.name) : []);
-    } catch (error) {
-      console.error('Failed to load colors:', error);
-      setColors([]);
-    }
+    loadBrandsAndColors();
     
     // Load all gear for recommended products selection
     const loadAllGear = async () => {
