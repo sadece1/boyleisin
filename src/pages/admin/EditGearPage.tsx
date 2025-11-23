@@ -160,16 +160,26 @@ export const EditGearPage = () => {
         }
       }
       
-      // Ensure rating is a valid number or undefined
+      // Ensure rating is a valid number or null (0 is valid!)
       // Backend may return rating as string or null
-      let actualRating = gearData.rating ?? gearData.rating_value ?? undefined;
-      if (actualRating !== undefined && actualRating !== null) {
-        if (typeof actualRating === 'string') {
-          actualRating = parseFloat(actualRating) || undefined;
+      let actualRating: number | null = null;
+      const rawRating = gearData.rating ?? gearData.rating_value;
+      if (rawRating !== undefined && rawRating !== null && rawRating !== '') {
+        if (typeof rawRating === 'string') {
+          const trimmed = rawRating.trim();
+          if (trimmed === '' || trimmed === 'null') {
+            actualRating = null;
+          } else {
+            const parsed = parseFloat(trimmed);
+            actualRating = isNaN(parsed) ? null : parsed;
+          }
+        } else if (typeof rawRating === 'number') {
+          actualRating = isNaN(rawRating) ? null : rawRating;
+        } else {
+          actualRating = null;
         }
-        if (typeof actualRating !== 'number' || isNaN(actualRating)) {
-          actualRating = undefined;
-        }
+      } else {
+        actualRating = null;
       }
       
       console.log('Loading gear data:', currentGear); // Debug log
@@ -247,17 +257,30 @@ export const EditGearPage = () => {
         setSpecificationsState([{ key: '', value: '' }]); // YENİ: State'e de yükle
       }
       
-      // YENİ: Rating'i state'e direkt yükle - MEVCUT DEĞERİ KORU
-      const gearRating = currentGear.rating ?? currentGear.rating_value ?? null;
-      if (gearRating !== null && gearRating !== undefined) {
-        const ratingNum = typeof gearRating === 'number' ? gearRating : parseFloat(String(gearRating));
-        const finalRating = isNaN(ratingNum) ? null : ratingNum;
-        setRatingState(finalRating);
-        console.log('✅ Loaded rating to state:', finalRating, 'from gear:', gearRating);
+      // YENİ: Rating'i state'e direkt yükle - MEVCUT DEĞERİ KORU (0 dahil!)
+      const gearRating = currentGear.rating ?? currentGear.rating_value;
+      let finalRating: number | null = null;
+      
+      if (gearRating !== null && gearRating !== undefined && gearRating !== '') {
+        if (typeof gearRating === 'number') {
+          finalRating = isNaN(gearRating) ? null : gearRating;
+        } else if (typeof gearRating === 'string') {
+          const trimmed = String(gearRating).trim();
+          if (trimmed === '' || trimmed === 'null') {
+            finalRating = null;
+          } else {
+            const parsed = parseFloat(trimmed);
+            finalRating = isNaN(parsed) ? null : parsed;
+          }
+        } else {
+          finalRating = null;
+        }
       } else {
-        setRatingState(null);
-        console.log('⚠️ No rating in gear, set to null');
+        finalRating = null;
       }
+      
+      setRatingState(finalRating);
+      console.log('⭐ Setting rating STATE to:', finalRating, 'from gear:', gearRating);
       
       // Kategori hiyerarşisini belirle
       const categoryId = currentGear.categoryId;
@@ -542,12 +565,32 @@ export const EditGearPage = () => {
       const deposit = formData.deposit !== undefined && formData.deposit !== null && !isNaN(Number(formData.deposit)) ? Number(formData.deposit) : null;
       
       // YENİ MEKANİZMA 2: Yıldız (Rating) - State'den direkt al, yoksa mevcut değeri koru
-      // Eğer ratingState null/undefined ise, mevcut rating'i koru
-      const finalRatingValue = (ratingState !== null && ratingState !== undefined) 
-        ? ratingState 
-        : (currentGear.rating !== null && currentGear.rating !== undefined 
-          ? (typeof currentGear.rating === 'number' ? currentGear.rating : parseFloat(String(currentGear.rating)))
-          : null);
+      // Eğer ratingState null/undefined ise, mevcut rating'i koru (0 dahil!)
+      let finalRatingValue: number | null = null;
+      if (ratingState !== null && ratingState !== undefined) {
+        // State'de değer var, direkt kullan
+        finalRatingValue = ratingState;
+      } else {
+        // State'de değer yok, currentGear'den al
+        const gearRating = currentGear.rating ?? currentGear.rating_value;
+        if (gearRating !== null && gearRating !== undefined && gearRating !== '') {
+          if (typeof gearRating === 'number') {
+            finalRatingValue = isNaN(gearRating) ? null : gearRating;
+          } else if (typeof gearRating === 'string') {
+            const trimmed = String(gearRating).trim();
+            if (trimmed === '' || trimmed === 'null') {
+              finalRatingValue = null;
+            } else {
+              const parsed = parseFloat(trimmed);
+              finalRatingValue = isNaN(parsed) ? null : parsed;
+            }
+          } else {
+            finalRatingValue = null;
+          }
+        } else {
+          finalRatingValue = null;
+        }
+      }
       console.log('✅ Rating from STATE:', ratingState);
       console.log('✅ Current gear rating:', currentGear.rating);
       console.log('✅ Final rating value:', finalRatingValue);
