@@ -24,18 +24,58 @@ export const gearService = {
       );
       
       // Backend returns { success: true, data: gear[], pagination: {...} }
+      let gearList: Gear[] = [];
       if ((response.data as any).success && (response.data as any).data) {
-      return {
-          data: (response.data as any).data,
-          total: (response.data as any).pagination?.total || (response.data as any).data.length,
+        gearList = (response.data as any).data;
+      } else if (Array.isArray((response.data as any).data)) {
+        gearList = (response.data as any).data;
+      } else if (Array.isArray(response.data)) {
+        gearList = response.data as Gear[];
+      }
+      
+      // Transform snake_case to camelCase for all gear items
+      const transformedGearList = gearList.map((gearItem: any) => {
+        // Parse price_per_day
+        let pricePerDay = 0;
+        if (gearItem.price_per_day !== undefined && gearItem.price_per_day !== null) {
+          if (typeof gearItem.price_per_day === 'string') {
+            pricePerDay = parseFloat(gearItem.price_per_day) || 0;
+          } else if (typeof gearItem.price_per_day === 'number') {
+            pricePerDay = gearItem.price_per_day;
+          }
+        } else if (gearItem.pricePerDay !== undefined && gearItem.pricePerDay !== null) {
+          if (typeof gearItem.pricePerDay === 'string') {
+            pricePerDay = parseFloat(gearItem.pricePerDay) || 0;
+          } else if (typeof gearItem.pricePerDay === 'number') {
+            pricePerDay = gearItem.pricePerDay;
+          }
+        }
+        
+        return {
+          ...gearItem,
+          pricePerDay: pricePerDay,
+          categoryId: gearItem.category_id ?? gearItem.categoryId,
+          recommendedProducts: gearItem.recommended_products ?? gearItem.recommendedProducts ?? [],
+          updatedAt: gearItem.updated_at ?? gearItem.updatedAt,
+          createdAt: gearItem.created_at ?? gearItem.createdAt,
+        } as Gear;
+      });
+      
+      if ((response.data as any).success && (response.data as any).data) {
+        return {
+          data: transformedGearList,
+          total: (response.data as any).pagination?.total || transformedGearList.length,
           page: (response.data as any).pagination?.page || page,
           limit: (response.data as any).pagination?.limit || limit,
-          totalPages: (response.data as any).pagination?.totalPages || Math.ceil(((response.data as any).pagination?.total || (response.data as any).data.length) / limit),
+          totalPages: (response.data as any).pagination?.totalPages || Math.ceil(((response.data as any).pagination?.total || transformedGearList.length) / limit),
         };
       }
       
       // Direct paginated response
-      return response.data as PaginatedResponse<Gear>;
+      return {
+        ...(response.data as PaginatedResponse<Gear>),
+        data: transformedGearList,
+      };
     } catch (error) {
       // Always throw error - no mock fallback
       throw error;
