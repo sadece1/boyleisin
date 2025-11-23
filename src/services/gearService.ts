@@ -54,7 +54,39 @@ export const gearService = {
         gearData = response.data;
       }
       
+      // CRITICAL DEBUG: Log raw rating from backend
+      console.log('🔍 [getGearById] Raw rating from backend:', {
+        rating: gearData.rating,
+        type: typeof gearData.rating,
+        isNull: gearData.rating === null,
+        isUndefined: gearData.rating === undefined,
+        stringValue: String(gearData.rating),
+        fullGearData: gearData
+      });
+      
       // Transform snake_case to camelCase and ensure proper types
+      let parsedRating: number | null = null;
+      
+      if (gearData.rating !== null && gearData.rating !== undefined) {
+        if (typeof gearData.rating === 'string') {
+          const trimmed = gearData.rating.trim();
+          if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') {
+            parsedRating = null;
+          } else {
+            const parsed = parseFloat(trimmed);
+            parsedRating = isNaN(parsed) ? null : parsed;
+          }
+        } else if (typeof gearData.rating === 'number') {
+          parsedRating = isNaN(gearData.rating) ? null : gearData.rating;
+        } else {
+          parsedRating = null;
+        }
+      } else {
+        parsedRating = null;
+      }
+      
+      console.log('🔍 [getGearById] Parsed rating:', parsedRating, typeof parsedRating);
+      
       const transformed: Gear = {
         ...gearData,
         pricePerDay: typeof gearData.price_per_day === 'string' 
@@ -63,20 +95,12 @@ export const gearService = {
         deposit: gearData.deposit !== null && gearData.deposit !== undefined
           ? (typeof gearData.deposit === 'string' ? parseFloat(gearData.deposit) || null : gearData.deposit)
           : null,
-        rating: gearData.rating !== null && gearData.rating !== undefined
-          ? (() => {
-              if (typeof gearData.rating === 'string') {
-                const trimmed = gearData.rating.trim();
-                if (trimmed === '' || trimmed === 'null') return null;
-                const parsed = parseFloat(trimmed);
-                return isNaN(parsed) ? null : parsed;
-              }
-              return typeof gearData.rating === 'number' ? gearData.rating : null;
-            })()
-          : null,
+        rating: parsedRating, // Use the parsed rating
         categoryId: gearData.category_id ?? gearData.categoryId,
         recommendedProducts: gearData.recommended_products ?? gearData.recommendedProducts ?? [],
       };
+      
+      console.log('🔍 [getGearById] Final transformed rating:', transformed.rating, typeof transformed.rating);
       
       return transformed as Gear;
     } catch (error: any) {

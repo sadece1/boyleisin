@@ -130,7 +130,14 @@ export const EditGearPage = () => {
 
   useEffect(() => {
     if (currentGear) {
-      console.log('Loading gear data:', currentGear); // Debug log
+      console.log('🔍 [EditGearPage] Loading gear data:', currentGear); // Debug log
+      console.log('🔍 [EditGearPage] Rating in currentGear:', {
+        rating: currentGear.rating,
+        type: typeof currentGear.rating,
+        isNull: currentGear.rating === null,
+        isUndefined: currentGear.rating === undefined,
+        stringValue: String(currentGear.rating)
+      }); // Debug log
       
       // Status'u belirle (available'dan veya mevcut status'tan)
       const status = currentGear.status || (currentGear.available ? 'for-sale' : 'sold');
@@ -280,7 +287,8 @@ export const EditGearPage = () => {
       }
       
       setRatingState(finalRating);
-      console.log('⭐ Setting rating STATE to:', finalRating, 'from gear:', gearRating);
+      console.log('⭐ [EditGearPage] Setting rating STATE to:', finalRating, 'from gear:', gearRating);
+      console.log('⭐ [EditGearPage] Rating state after set:', finalRating, typeof finalRating);
       
       // Kategori hiyerarşisini belirle
       const categoryId = currentGear.categoryId;
