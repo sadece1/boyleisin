@@ -85,47 +85,64 @@ export const useAdminNotifications = () => {
   useEffect(() => {
     const loadNotifications = async () => {
       try {
-        // Load messages to get unread count
-        await fetchMessages(1);
-        
-        // Load appointments to get pending count
-        await fetchAppointments(1);
-        
-        // Load newsletters to get new subscriptions
-        await fetchSubscriptions(1);
-        
-        // Load pending orders
-        try {
-          const orders = await userOrderService.getOrders();
-          const pendingOrders = Array.isArray(orders) 
-            ? orders.filter((order: any) => order.status === 'pending' || order.status === 'processing')
-            : [];
-          
-          // Count only orders created after last seen
-          const lastSeenOrders = getLastSeen(LAST_SEEN_ORDERS_KEY);
-          const newOrders = pendingOrders.filter((order: any) => {
-            const createdAt = new Date(order.createdAt || order.created_at).getTime();
-            return createdAt > lastSeenOrders;
-          });
-          
-          setCounts(prev => ({ ...prev, orders: newOrders.length }));
-        } catch (error) {
-          console.error('Failed to load pending orders:', error);
+        // Load messages to get unread count (only if messages page is not active)
+        if (location.pathname !== routes.adminMessages && !location.pathname.startsWith(routes.adminMessages)) {
+          await fetchMessages(1);
         }
         
-        // Load new users
-        try {
-          const users = await authService.getAllUsers();
-          const lastSeenUsers = getLastSeen(LAST_SEEN_USERS_KEY);
-          const newUsers = Array.isArray(users) 
-            ? users.filter((user: any) => {
-                const createdAt = new Date(user.createdAt || user.created_at).getTime();
-                return createdAt > lastSeenUsers;
-              })
-            : [];
-          setCounts(prev => ({ ...prev, users: newUsers.length }));
-        } catch (error) {
-          console.error('Failed to load new users:', error);
+        // Load appointments to get pending count (only if appointments page is not active)
+        if (location.pathname !== routes.adminAppointments && !location.pathname.startsWith(routes.adminAppointments)) {
+          await fetchAppointments(1);
+        }
+        
+        // Load newsletters to get new subscriptions (only if newsletters page is not active)
+        if (location.pathname !== routes.adminNewsletters && !location.pathname.startsWith(routes.adminNewsletters)) {
+          await fetchSubscriptions(1);
+        }
+        
+        // Load pending orders (only if orders page is not active)
+        if (location.pathname !== routes.adminUserOrders && !location.pathname.startsWith(routes.adminUserOrders)) {
+          try {
+            const orders = await userOrderService.getOrders();
+            const pendingOrders = Array.isArray(orders) 
+              ? orders.filter((order: any) => order.status === 'pending' || order.status === 'processing')
+              : [];
+            
+            // Count only orders created after last seen
+            const lastSeenOrders = getLastSeen(LAST_SEEN_ORDERS_KEY);
+            const newOrders = pendingOrders.filter((order: any) => {
+              const createdAt = new Date(order.createdAt || order.created_at).getTime();
+              return createdAt > lastSeenOrders;
+            });
+            
+            setCounts(prev => ({ ...prev, orders: newOrders.length }));
+          } catch (error) {
+            console.error('Failed to load pending orders:', error);
+          }
+        } else {
+          // If orders page is active, set count to 0 (user has seen the page)
+          setCounts(prev => ({ ...prev, orders: 0 }));
+        }
+        
+        // Load new users (only if users page is not currently active to reduce API calls)
+        if (location.pathname !== routes.adminUsers && !location.pathname.startsWith(routes.adminUsers)) {
+          try {
+            const users = await authService.getAllUsers();
+            const lastSeenUsers = getLastSeen(LAST_SEEN_USERS_KEY);
+            const newUsers = Array.isArray(users) 
+              ? users.filter((user: any) => {
+                  const createdAt = new Date(user.createdAt || user.created_at).getTime();
+                  return createdAt > lastSeenUsers;
+                })
+              : [];
+            setCounts(prev => ({ ...prev, users: newUsers.length }));
+          } catch (error) {
+            console.error('Failed to load new users:', error);
+            // Don't update count on error to avoid showing stale data
+          }
+        } else {
+          // If users page is active, set count to 0 (user has seen the page)
+          setCounts(prev => ({ ...prev, users: 0 }));
         }
       } catch (error) {
         console.error('Failed to load notifications:', error);
@@ -134,11 +151,11 @@ export const useAdminNotifications = () => {
 
     loadNotifications();
     
-    // Refresh every 30 seconds
-    const interval = setInterval(loadNotifications, 30000);
+    // Refresh every 60 seconds (reduced from 30 to reduce API calls)
+    const interval = setInterval(loadNotifications, 60000);
     
     return () => clearInterval(interval);
-  }, [fetchMessages, fetchAppointments, fetchSubscriptions]);
+  }, [fetchMessages, fetchAppointments, fetchSubscriptions, location.pathname]);
 
   // Update counts when data changes, checking against last seen timestamps
   useEffect(() => {

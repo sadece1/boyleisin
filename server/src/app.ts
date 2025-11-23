@@ -134,12 +134,13 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks and categories (frequently accessed)
+    // Skip rate limiting for health checks, categories, and admin endpoints (frequently accessed)
     const path = req.path || req.url || '';
     return path === '/health' || 
            path === '/api/health' ||
            path.startsWith('/api/categories') ||
-           path.startsWith('/categories');
+           path.startsWith('/categories') ||
+           path.startsWith('/api/admin'); // Admin endpoints are authenticated, so safe to skip rate limiting
   },
 });
 
