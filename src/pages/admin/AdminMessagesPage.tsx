@@ -15,9 +15,21 @@ export const AdminMessagesPage = () => {
   }, [fetchMessages]);
 
   const handleMarkAsRead = async (id: string) => {
-    await markAsRead(id);
-    if (selectedMessage?.id === id) {
-      setSelectedMessage({ ...selectedMessage, read: true });
+    try {
+      await markAsRead(id);
+      // Refresh messages list to get updated read status
+      await fetchMessages(1);
+      // Update selected message if it's the one being marked as read
+      if (selectedMessage?.id === id) {
+        const updatedMessages = useMessageStore.getState().messages;
+        const updatedMessage = updatedMessages.find(m => m.id === id);
+        if (updatedMessage) {
+          setSelectedMessage({ ...updatedMessage, read: true });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to mark message as read:', error);
+      alert('Mesaj okundu olarak işaretlenemedi');
     }
   };
 

@@ -8,6 +8,7 @@ import {
 } from '../services/contactService';
 import { asyncHandler } from '../middleware/errorHandler';
 import { parseDate } from '../utils/helpers';
+import pool from '../config/database';
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const message = await createContactMessage(req.body);
@@ -38,7 +39,28 @@ export const getAll = asyncHandler(async (req: AuthRequest, res: Response) => {
 export const markRead = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   await markAsRead(id);
-  res.status(200).json({ success: true, message: 'Message marked as read' });
+  
+  // Fetch the updated message to return it
+  const [messages] = await pool.execute<Array<any>>(
+    'SELECT * FROM contact_messages WHERE id = ?',
+    [id]
+  );
+  
+  if (messages.length === 0) {
+    return res.status(404).json({ success: false, message: 'Message not found' });
+  }
+  
+  const updatedMessage = {
+    ...messages[0],
+    created_at: parseDate(messages[0].created_at),
+    updated_at: parseDate(messages[0].updated_at),
+  };
+  
+  res.status(200).json({ 
+    success: true, 
+    message: 'Message marked as read',
+    data: updatedMessage
+  });
 });
 
 export const remove = asyncHandler(async (req: AuthRequest, res: Response) => {
