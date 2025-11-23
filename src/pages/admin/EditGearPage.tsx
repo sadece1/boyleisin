@@ -334,33 +334,40 @@ export const EditGearPage = () => {
   // CRITICAL: Separate useEffect to ALWAYS update specifications state when currentGear.specifications changes
   useEffect(() => {
     if (currentGear && currentGear.specifications !== undefined) {
-      if (currentGear.specifications && Object.keys(currentGear.specifications).length > 0) {
-        const specsArray = Object.entries(currentGear.specifications).map(([key, value]) => ({
-          key,
-          value: String(value),
-        }));
-        // Only update if different to avoid infinite loops
-        const currentSpecsStr = JSON.stringify(specificationsState);
-        const newSpecsStr = JSON.stringify(specsArray);
-        if (currentSpecsStr !== newSpecsStr) {
+      // Convert current state to object for comparison
+      const currentSpecsObj = specificationsState
+        .filter(s => s.key.trim() && s.value.trim())
+        .reduce((acc, s) => ({ ...acc, [s.key.trim()]: s.value.trim() }), {});
+      const currentSpecsStr = JSON.stringify(currentSpecsObj);
+      const gearSpecsStr = JSON.stringify(currentGear.specifications || {});
+      
+      // Only update if different to avoid unnecessary re-renders
+      if (gearSpecsStr !== currentSpecsStr) {
+        if (currentGear.specifications && Object.keys(currentGear.specifications).length > 0) {
+          const specsArray = Object.entries(currentGear.specifications).map(([key, value]) => ({
+            key,
+            value: String(value),
+          }));
           console.log('🔄 [EditGearPage] Specifications state sync:', {
             currentState: specificationsState,
             newState: specsArray,
-            gearSpecs: currentGear.specifications
+            gearSpecs: currentGear.specifications,
+            gearSpecsStr,
+            currentSpecsStr
           });
           setSpecificationsState(specsArray);
           setSpecifications(specsArray);
-        }
-      } else {
-        // Empty specifications - set to empty array with one empty field
-        if (specificationsState.length !== 1 || specificationsState[0].key !== '' || specificationsState[0].value !== '') {
-          console.log('🔄 [EditGearPage] Specifications cleared');
-          setSpecificationsState([{ key: '', value: '' }]);
-          setSpecifications([{ key: '', value: '' }]);
+        } else {
+          // Empty specifications - set to empty array with one empty field
+          if (specificationsState.length !== 1 || specificationsState[0].key !== '' || specificationsState[0].value !== '') {
+            console.log('🔄 [EditGearPage] Specifications cleared');
+            setSpecificationsState([{ key: '', value: '' }]);
+            setSpecifications([{ key: '', value: '' }]);
+          }
         }
       }
     }
-  }, [currentGear?.specifications, currentGear?.id]); // Only depend on specifications and id
+  }, [currentGear?.specifications, currentGear?.id, currentGear?.updated_at]); // Include updated_at to detect when gear is updated
 
   // CRITICAL: Separate useEffect to ALWAYS update category selection when currentGear.categoryId changes
   useEffect(() => {
@@ -443,7 +450,7 @@ export const EditGearPage = () => {
       };
       loadCategoryHierarchy();
     }
-  }, [currentGear?.categoryId, currentGear?.id, setValue]); // Only depend on categoryId and id
+  }, [currentGear?.categoryId, currentGear?.id, currentGear?.updated_at, setValue]); // Include updated_at to detect when gear is updated
 
   // Ana kategori değiştiğinde alt kategorileri güncelle
   useEffect(() => {
