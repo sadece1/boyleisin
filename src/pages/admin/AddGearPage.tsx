@@ -97,9 +97,9 @@ export const AddGearPage = () => {
     loadAllGear();
     
     // Listen for updates
-    const handleBrandsUpdate = () => {
+    const handleBrandsUpdate = async () => {
       try {
-        const updatedBrands = brandService.getAllBrands();
+        const updatedBrands = await brandService.getAllBrands();
         setBrands(Array.isArray(updatedBrands) ? updatedBrands.map(b => b.name) : []);
       } catch (error) {
         console.error('Failed to update brands:', error);
