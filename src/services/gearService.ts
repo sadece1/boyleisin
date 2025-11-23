@@ -64,8 +64,16 @@ export const gearService = {
           ? (typeof gearData.deposit === 'string' ? parseFloat(gearData.deposit) || null : gearData.deposit)
           : null,
         rating: gearData.rating !== null && gearData.rating !== undefined
-          ? (typeof gearData.rating === 'string' ? parseFloat(gearData.rating) || undefined : gearData.rating)
-          : undefined,
+          ? (() => {
+              if (typeof gearData.rating === 'string') {
+                const trimmed = gearData.rating.trim();
+                if (trimmed === '' || trimmed === 'null') return null;
+                const parsed = parseFloat(trimmed);
+                return isNaN(parsed) ? null : parsed;
+              }
+              return typeof gearData.rating === 'number' ? gearData.rating : null;
+            })()
+          : null,
         categoryId: gearData.category_id ?? gearData.categoryId,
         recommendedProducts: gearData.recommended_products ?? gearData.recommendedProducts ?? [],
       };
