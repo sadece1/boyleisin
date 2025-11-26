@@ -11,21 +11,32 @@
     <meta name="language" content="Turkish" />
     <meta name="revisit-after" content="7 days" />
     
-    <!-- Critical CSS for above-the-fold content -->
+    <!-- Critical CSS for above-the-fold content - LCP Optimized -->
     <style>
       /* Critical CSS - Above the fold styles */
       body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-      #root{min-height:100vh}
+      #root{min-height:100vh;display:flex;flex-direction:column}
       /* Prevent layout shift */
-      img{max-width:100%;height:auto}
+      img{max-width:100%;height:auto;display:block}
+      /* Hero section critical styles for LCP */
+      .hero-section{position:relative;min-height:85vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;overflow:hidden}
+      .hero-bg{position:absolute;inset:0;background:linear-gradient(to bottom right,#18412d,#216042,#27784f)}
+      .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.2),transparent)}
+      .hero-content{position:relative;z-index:10;max-width:80rem;margin:0 auto;padding:5rem 1rem}
+      /* Font display optimization */
+      @font-face{font-display:swap}
     </style>
     
-    <!-- Preload critical resources for LCP optimization -->
-    <!-- Note: tent-4534210_1280.jpg is used as CSS background-image, not as <img> tag -->
-    <!-- Preload removed to avoid "preload but not used" warning -->
+    <!-- LCP Optimization: Preload critical resources -->
+    <!-- Hero image preload for LCP (Largest Contentful Paint) optimization -->
+    <link rel="preload" as="image" href="/tent-4534210_1280.jpg" fetchpriority="high" />
     
-    <!-- Preconnect to external domains -->
+    <!-- DNS prefetch and preconnect for external resources -->
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    
+    <!-- Preconnect to API domain for faster API requests -->
+    <link rel="preconnect" href="https://sadece1deneme.com" />
     
     <!-- Open Graph / Facebook - Will be set dynamically by SEO component -->
     <!-- Twitter - Will be set dynamically by SEO component -->

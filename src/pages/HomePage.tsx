@@ -115,17 +115,25 @@ export const HomePage = () => {
         locale="tr_TR"
       />
 
-      {/* Hero Section */}
+      {/* Hero Section - LCP Optimized */}
       <section className="relative min-h-[85vh] flex items-center justify-center text-center text-white overflow-hidden">
-        {/* Background with parallax effect */}
+        {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900 via-primary-700 to-primary-600" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{
-            backgroundImage: "url('/tent-4534210_1280.jpg')",
-            transform: 'scale(1.1)',
-          }}
+        
+        {/* LCP Image - Using <img> tag instead of CSS background for better LCP measurement */}
+        <img
+          src="/tent-4534210_1280.jpg"
+          alt="Kamp alanı ve doğa manzarası"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          style={{ transform: 'scale(1.1)' }}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          width="1280"
+          height="853"
         />
+        
+        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
         {/* Content */}
