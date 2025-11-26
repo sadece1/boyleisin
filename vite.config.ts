@@ -19,38 +19,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Manual chunks for better caching - improved to prevent initialization errors
+        // Simplified manual chunks to prevent initialization errors
+        // Only split React-related packages to avoid circular dependencies
         manualChunks: (id) => {
-          // React core - must be together to prevent initialization errors
+          // All React-related packages in one chunk to prevent initialization issues
           if (
-            id.includes('node_modules/react/') || 
-            id.includes('node_modules/react-dom/') ||
-            id.includes('node_modules/react/jsx-runtime') ||
-            id.includes('node_modules/react/jsx-dev-runtime')
+            id.includes('node_modules/react') || 
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/react-router')
           ) {
             return 'react-vendor';
           }
-          // React Router - keep with React to avoid circular dependencies
-          if (id.includes('node_modules/react-router')) {
-            return 'react-vendor';
-          }
-          // UI library chunk
-          if (id.includes('node_modules/framer-motion')) {
-            return 'ui-vendor';
-          }
-          // Form libraries
-          if (id.includes('node_modules/react-hook-form')) {
-            return 'form-vendor';
-          }
-          // HTTP client
-          if (id.includes('node_modules/axios')) {
-            return 'http-vendor';
-          }
-          // State management
-          if (id.includes('node_modules/zustand')) {
-            return 'state-vendor';
-          }
-          // Other large libraries
+          // All other node_modules in vendor chunk
           if (id.includes('node_modules')) {
             return 'vendor';
           }
@@ -62,8 +42,7 @@ export default defineConfig({
       },
     },
     // Minification - use esbuild for better compatibility
-    minify: 'esbuild', // Changed from terser to esbuild for better compatibility
-    // terserOptions removed - using esbuild instead
+    minify: 'esbuild',
   },
   server: {
     port: 5173,
