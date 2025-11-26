@@ -19,18 +19,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Manual chunks for better caching
+        // Manual chunks for better caching - improved to prevent initialization errors
         manualChunks: (id) => {
-          // React and React DOM must be in the same chunk to avoid "Cannot set properties of undefined" error
-          // Also include react/jsx-runtime to prevent duplicate React instances
+          // React core - must be together to prevent initialization errors
           if (
             id.includes('node_modules/react/') || 
             id.includes('node_modules/react-dom/') ||
-            id.includes('node_modules/react/jsx-runtime')
+            id.includes('node_modules/react/jsx-runtime') ||
+            id.includes('node_modules/react/jsx-dev-runtime')
           ) {
             return 'react-vendor';
           }
-          // React Router can be separate
+          // React Router - keep with React to avoid circular dependencies
           if (id.includes('node_modules/react-router')) {
             return 'react-vendor';
           }
@@ -38,7 +38,19 @@ export default defineConfig({
           if (id.includes('node_modules/framer-motion')) {
             return 'ui-vendor';
           }
-          // Large libraries
+          // Form libraries
+          if (id.includes('node_modules/react-hook-form')) {
+            return 'form-vendor';
+          }
+          // HTTP client
+          if (id.includes('node_modules/axios')) {
+            return 'http-vendor';
+          }
+          // State management
+          if (id.includes('node_modules/zustand')) {
+            return 'state-vendor';
+          }
+          // Other large libraries
           if (id.includes('node_modules')) {
             return 'vendor';
           }
@@ -49,14 +61,9 @@ export default defineConfig({
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
-    // Minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.log in production
-        drop_debugger: true,
-      },
-    },
+    // Minification - use esbuild for better compatibility
+    minify: 'esbuild', // Changed from terser to esbuild for better compatibility
+    // terserOptions removed - using esbuild instead
   },
   server: {
     port: 5173,
