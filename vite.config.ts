@@ -19,22 +19,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Simplified manual chunks to prevent initialization errors
-        // Only split React-related packages to avoid circular dependencies
-        manualChunks: (id) => {
-          // All React-related packages in one chunk to prevent initialization issues
-          if (
-            id.includes('node_modules/react') || 
-            id.includes('node_modules/react-dom') ||
-            id.includes('node_modules/react-router')
-          ) {
-            return 'react-vendor';
-          }
-          // All other node_modules in vendor chunk
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
+        // Disable manual chunks to let Vite handle chunk splitting automatically
+        // This prevents initialization errors from circular dependencies
+        // Vite's automatic chunk splitting is more reliable
+        // manualChunks: undefined, // Let Vite decide
+        
         // Optimize chunk file names
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
