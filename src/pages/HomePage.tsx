@@ -298,6 +298,7 @@ export const HomePage = () => {
                         src={post.image}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        priority={index < 2} // First 2 blog images above-the-fold: eager loading
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute top-4 left-4">
@@ -393,10 +394,11 @@ export const HomePage = () => {
                   <Link to={`/gear/${item.id}`}>
                     <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
                       {item.images && item.images.length > 0 ? (
-                        <img
+                        <OptimizedImage
                           src={item.images[0]}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          priority={index < 2} // First 2 gear images above-the-fold: eager loading
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl">

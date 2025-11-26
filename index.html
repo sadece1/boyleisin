@@ -23,8 +23,10 @@
       .hero-bg{position:absolute;inset:0;background:linear-gradient(to bottom right,#18412d,#216042,#27784f)}
       .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.2),transparent)}
       .hero-content{position:relative;z-index:10;max-width:80rem;margin:0 auto;padding:5rem 1rem}
-      /* Font display optimization */
+      /* Font display optimization - prevents FOIT (Flash of Invisible Text) */
       @font-face{font-display:swap}
+      /* System font stack for instant text rendering */
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif}
     </style>
     
     <!-- LCP Optimization: Preload critical resources -->
@@ -46,6 +48,7 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Main script - module type automatically defers execution -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
