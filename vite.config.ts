@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { cssAsync } from './vite-plugin-css-async'
+import { removeConsole } from './vite-plugin-remove-console'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), cssAsync(), removeConsole()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -21,10 +23,15 @@ export default defineConfig({
       'react-router-dom',
       'react-helmet-async',
       'react-hook-form',
+      'framer-motion',
+      'axios',
+      'zustand',
     ],
     esbuildOptions: {
       // Force ESM format to prevent CommonJS issues
       format: 'esm',
+      // Remove console.log in production for better tree shaking
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     },
   },
   build: {

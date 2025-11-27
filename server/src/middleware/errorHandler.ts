@@ -107,10 +107,10 @@ export const errorHandler = (
 export const notFoundHandler = (req: Request, res: Response): void => {
   // Check if it's an API request
   if (req.path.startsWith('/api/')) {
-    res.status(404).json({
-      success: false,
-      message: `Route ${req.originalUrl} not found`,
-    });
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
     return;
   }
 

@@ -6,7 +6,6 @@ import { referenceService, Reference } from '@/services/referenceService';
 import { brandService, Brand } from '@/services/brandService';
 import { uploadService } from '@/services/uploadService';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { logger } from '@/utils/logger';
 
 export const ReferencesPage = () => {
   const [references, setReferences] = useState<Reference[]>([]);
@@ -56,7 +55,7 @@ export const ReferencesPage = () => {
         }));
       setBrands(brandsWithLogos);
     } catch (error) {
-      logger.error('Failed to load references data:', error);
+      console.error('Failed to load references data:', error);
     } finally {
       setIsLoading(false);
     }

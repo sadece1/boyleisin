@@ -40,23 +40,14 @@ export const OptimizedImage = ({
       return optimizeUnsplashUrl(src, width);
     }
     
-    // For local images and API uploads, add optimization parameters
+    // For local images, add optimization parameters (assumes backend can serve WebP/AVIF)
     // This enables responsive images and format optimization
-    // Handles both /path/to/image.jpg and /api/uploads/image.jpg
-    if ((src.startsWith('/') || src.includes('/api/uploads/')) && !src.includes('?')) {
+    if (src.startsWith('/') && !src.includes('?')) {
       // Add width parameter for responsive images
       const params = new URLSearchParams();
       if (width) params.set('w', width.toString());
       params.set('q', '80'); // Quality
       return `${src}?${params.toString()}`;
-    }
-    
-    // If URL already has params, ensure optimization params are present
-    if (src.includes('/api/uploads/') && src.includes('?')) {
-      const urlObj = new URL(src, window.location.origin);
-      if (!urlObj.searchParams.has('q')) urlObj.searchParams.set('q', '80');
-      if (width && !urlObj.searchParams.has('w')) urlObj.searchParams.set('w', width.toString());
-      return urlObj.toString();
     }
     
     return src;
@@ -71,15 +62,15 @@ export const OptimizedImage = ({
       return generateSrcSet(src);
     }
     
-    // Local images and API uploads - generate responsive srcset
-    if ((src.startsWith('/') || src.includes('/api/uploads/')) && !src.includes('unsplash.com')) {
+    // Local images - generate responsive srcset
+    if (src.startsWith('/') && !src.includes('unsplash.com')) {
       const sizes = [400, 800, 1200, 1600];
-      const baseUrl = src.split('?')[0]; // Remove existing params if any
       return sizes
         .map((size) => {
           const params = new URLSearchParams();
           params.set('w', size.toString());
           params.set('q', '80');
+          const baseUrl = src.split('?')[0]; // Remove existing params if any
           return `${baseUrl}?${params.toString()} ${size}w`;
         })
         .join(', ');

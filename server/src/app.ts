@@ -117,25 +117,8 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Compression middleware with optimized settings for faster TTFB
-app.use(compression({
-  level: 6, // Balance between compression and CPU usage (1-9, default 6)
-  threshold: 1024, // Only compress responses > 1KB
-  filter: (req, res) => {
-    // Don't compress if client doesn't support it
-    if (req.headers['x-no-compression']) {
-      return false;
-    }
-    // Compress text-based content (JSON, HTML, CSS, JS)
-    const contentType = res.getHeader('content-type') || '';
-    return typeof contentType === 'string' && (
-      contentType.includes('text/') ||
-      contentType.includes('application/json') ||
-      contentType.includes('application/javascript') ||
-      contentType.includes('application/xml')
-    );
-  },
-}));
+// Compression middleware
+app.use(compression());
 
 // Cookie parser middleware (for HttpOnly cookies)
 app.use(cookieParser());

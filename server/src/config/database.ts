@@ -47,10 +47,10 @@ const RETRY_DELAY_MS = 5000; // 5 seconds
  */
 export const testConnection = async (retries: number = MAX_RETRY_COUNT): Promise<void> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const connection = await pool.getConnection();
+  try {
+    const connection = await pool.getConnection();
       await connection.ping();
-      connection.release();
+    connection.release();
       
       isConnectionHealthy = true;
       lastConnectionError = null;
@@ -111,7 +111,7 @@ export const startConnectionMonitoring = (intervalMs: number = 30000) => {
   healthCheckInterval = setInterval(async () => {
     try {
       await testConnection(1); // Single attempt for monitoring
-    } catch (error) {
+  } catch (error) {
       logger.warn('Database health check failed (monitoring only):', {
         error: (error as Error).message,
       });

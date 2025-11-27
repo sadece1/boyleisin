@@ -82,22 +82,23 @@ export const ImageSlider = ({
       onDragChange(false);
     }
 
-    // Get container width for better calculation - use requestAnimationFrame to prevent forced reflow
-    // Batch DOM reads to prevent forced reflow (read-write-read pattern fix)
-    requestAnimationFrame(() => {
-      const containerWidth = containerRef.current?.clientWidth || 0;
-      const slideWidth = containerWidth > 0 ? containerWidth / images.length : 0;
-      
-      // Calculate relative movement (percentage of slide width)
-      const relativeMovement = slideWidth > 0 ? Math.abs(offset) / slideWidth : 0;
+    // Read DOM properties BEFORE any calculations to prevent forced reflow
+    // Batch all DOM reads together (read phase)
+    const containerWidth = containerRef.current?.clientWidth || 0;
+    const slideWidth = containerWidth > 0 ? containerWidth / images.length : 0;
+    
+    // Calculate relative movement (percentage of slide width)
+    const relativeMovement = slideWidth > 0 ? Math.abs(offset) / slideWidth : 0;
 
-      // More sensitive detection: either absolute threshold OR relative movement OR velocity
-      const shouldChange = 
-        Math.abs(offset) > SWIPE_THRESHOLD ||  // Absolute minimum distance
-        relativeMovement > 0.15 ||              // 15% of slide width
-        Math.abs(velocity) > 300;               // Lowered velocity threshold
+    // More sensitive detection: either absolute threshold OR relative movement OR velocity
+    const shouldChange = 
+      Math.abs(offset) > SWIPE_THRESHOLD ||  // Absolute minimum distance
+      relativeMovement > 0.15 ||              // 15% of slide width
+      Math.abs(velocity) > 300;               // Lowered velocity threshold
 
-      if (shouldChange) {
+    // Batch all DOM writes together (write phase) using requestAnimationFrame
+    if (shouldChange) {
+      requestAnimationFrame(() => {
         // Determine direction based on offset (more reliable than velocity for small movements)
         if (offset > 0) {
           // Dragged right - go to previous
@@ -106,8 +107,8 @@ export const ImageSlider = ({
           // Dragged left - go to next
           goToNext();
         }
-      }
-    });
+      });
+    }
     // If not enough drag, it will snap back via animate prop
   };
 
