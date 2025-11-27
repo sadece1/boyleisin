@@ -1,38 +1,23 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SEO } from '@/components/SEO';
 import { Button } from '@/components/Button';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { routes, config } from '@/config';
-import { useBlogStore } from '@/store/blogStore';
-import { useGearStore } from '@/store/gearStore';
-import { formatDate, formatPrice } from '@/utils/validation';
 
 export const HomePage = () => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  const { blogs, fetchBlogs, isLoading: blogsLoading } = useBlogStore();
-  const { gear, fetchGear, isLoading: gearLoading } = useGearStore();
+  
+  // No API calls - static content only
+  // Data will be loaded on-demand when user navigates to blog/gear pages
+  const featuredBlogs: any[] = [];
+  const featuredGear: any[] = [];
 
-  // Fetch featured content on mount
-  useEffect(() => {
-    fetchBlogs({}, 1);
-    fetchGear({ available: true }, 1, 6); // Get 6 featured gear items
-  }, [fetchBlogs, fetchGear]);
-
-  // Get featured blogs
-  const featuredBlogs = [...blogs]
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
-    .slice(0, 3);
-
-  // Get featured gear
-  const featuredGear = gear.slice(0, 6);
-
-  // Stats data
+  // Stats data - static values (no API dependency)
   const stats = [
     { label: 'Kamp Alanı', value: '200+', icon: '🏕️', color: 'text-blue-600' },
-    { label: 'Kamp Malzemesi', value: `${gear.length}+`, icon: '🎒', color: 'text-green-600' },
-    { label: 'Blog Yazısı', value: `${blogs.length}+`, icon: '📝', color: 'text-purple-600' },
+    { label: 'Kamp Malzemesi', value: '500+', icon: '🎒', color: 'text-green-600' },
+    { label: 'Blog Yazısı', value: '100+', icon: '📝', color: 'text-purple-600' },
     { label: 'Mutlu Müşteri', value: '5000+', icon: '😊', color: 'text-orange-600' },
   ];
 
@@ -272,8 +257,8 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Blog Posts */}
-      {featuredBlogs.length > 0 && (
+      {/* Featured Blog Posts - Hidden when no data (no API dependency) */}
+      {false && featuredBlogs.length > 0 && (
         <section className="py-20 bg-white dark:bg-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -371,8 +356,8 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Featured Gear Section */}
-      {featuredGear.length > 0 && (
+      {/* Featured Gear Section - Hidden when no data (no API dependency) */}
+      {false && featuredGear.length > 0 && (
         <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
