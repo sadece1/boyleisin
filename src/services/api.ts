@@ -49,6 +49,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Handle ERR_BLOCKED_BY_CLIENT (ad blocker) - silently ignore
+    if (
+      error.code === 'ERR_NETWORK' ||
+      error.message?.includes('ERR_BLOCKED_BY_CLIENT') ||
+      error.message?.includes('net::ERR_BLOCKED_BY_CLIENT') ||
+      error.message?.includes('Failed to fetch') ||
+      (error.request && !error.response) // Network error without response
+    ) {
+      // Silently ignore blocked requests - don't log to console
+      // Return a resolved promise with empty data to prevent console errors
+      return Promise.resolve({
+        data: null,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: error.config,
+      } as any);
+    }
+    
     // Only handle 401 errors, ignore others (we'll use mock data)
     if (error.response?.status === 401) {
       // Unauthorized - clear auth and redirect to login

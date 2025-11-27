@@ -14,8 +14,17 @@ if (typeof window !== 'undefined') {
 
   // Unhandled promise rejection handler
   window.addEventListener('unhandledrejection', (e) => {
-    if (e.reason?.message?.includes('ERR_BLOCKED_BY_CLIENT') ||
-        e.reason?.message?.includes('Failed to fetch')) {
+    const reason = e.reason;
+    const errorMessage = reason?.message || reason?.toString() || '';
+    const errorCode = reason?.code || '';
+    
+    if (
+      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
+      errorMessage.includes('net::ERR_BLOCKED_BY_CLIENT') ||
+      errorMessage.includes('Failed to fetch') ||
+      errorCode === 'ERR_NETWORK' ||
+      (reason?.request && !reason?.response) // Axios network error
+    ) {
       e.preventDefault();
       return false;
     }
