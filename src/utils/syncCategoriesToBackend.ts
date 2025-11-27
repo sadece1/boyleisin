@@ -1,6 +1,7 @@
 import { categoryManagementService } from '@/services/categoryManagementService';
 import api from '@/services/api';
 import { Category } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface BackendCategory {
   id: string;
@@ -77,7 +78,7 @@ export async function syncCategoriesToBackend(): Promise<{
           }
         } catch (error: any) {
           const errorMsg = `Failed to create "${frontendCat.name}": ${error.response?.data?.message || error.message}`;
-          console.error(`❌ ${errorMsg}`);
+          logger.error(`❌ ${errorMsg}`);
           result.errors.push(errorMsg);
           // Don't set success = false here, continue with other categories
           // result.success = false;
@@ -132,7 +133,7 @@ export async function syncCategoriesToBackend(): Promise<{
             }
           } catch (error: any) {
             const errorMsg = `Failed to create "${frontendCat.name}": ${error.response?.data?.message || error.message}`;
-            console.error(`❌ ${errorMsg}`);
+            logger.error(`❌ ${errorMsg}`);
             result.errors.push(errorMsg);
             // Don't set success = false here, continue with other categories
             // result.success = false;
@@ -146,11 +147,11 @@ export async function syncCategoriesToBackend(): Promise<{
 
       if (processedInThisIteration.length === 0 && remainingCategories.length > 0) {
         // No progress made, there might be circular dependencies or missing parents
-        console.warn(`⚠️  Warning: ${remainingCategories.length} categories could not be processed. Possible circular dependencies or missing parents.`);
+        logger.warn(`⚠️  Warning: ${remainingCategories.length} categories could not be processed. Possible circular dependencies or missing parents.`);
         for (const cat of remainingCategories) {
           const parent = await categoryManagementService.getCategoryById(cat.parentId!);
           const errorMsg = `Could not create "${cat.name}": Parent "${parent?.name || cat.parentId}" not found in backend`;
-          console.error(`❌ ${errorMsg}`);
+          logger.error(`❌ ${errorMsg}`);
           result.errors.push(errorMsg);
         }
         break;
@@ -168,7 +169,7 @@ export async function syncCategoriesToBackend(): Promise<{
     return result;
   } catch (error: any) {
     const errorMsg = `Sync failed: ${error.message}`;
-    console.error(`❌ ${errorMsg}`);
+    logger.error(`❌ ${errorMsg}`);
     result.errors.push(errorMsg);
     // Only mark as unsuccessful if nothing was created
     if (result.created === 0) {

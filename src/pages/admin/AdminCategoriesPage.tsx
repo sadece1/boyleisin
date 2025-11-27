@@ -8,6 +8,7 @@ import { routes } from '@/config';
 import { Category } from '@/types';
 import { categoryManagementService } from '@/services/categoryManagementService';
 import { syncCategoriesToBackend } from '@/utils/syncCategoriesToBackend';
+import { logger } from '@/utils/logger';
 
 export const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -42,7 +43,7 @@ export const AdminCategoriesPage = () => {
     // Trigger navbar update
     window.dispatchEvent(new Event('categoriesUpdated'));
     } catch (error) {
-      console.error('Failed to load categories:', error);
+      logger.error('Failed to load categories:', error);
     }
   };
 
@@ -92,7 +93,7 @@ export const AdminCategoriesPage = () => {
             `Bazı kategoriler oluşturulamadı, ancak işlem devam etti.\n` +
             `Detaylar için console'u kontrol edin.`
           );
-          console.error('Sync errors:', result.errors);
+          logger.error('Sync errors:', result.errors);
         }
       } else {
         // Nothing was created or skipped
@@ -104,10 +105,10 @@ export const AdminCategoriesPage = () => {
           `Hiçbir kategori oluşturulamadı.\n` +
           `Detaylar için console'u kontrol edin.`
         );
-        console.error('Sync errors:', result.errors);
+        logger.error('Sync errors:', result.errors);
       }
     } catch (error: any) {
-      console.error('Sync failed:', error);
+      logger.error('Sync failed:', error);
       alert(`❌ Senkronizasyon başarısız oldu: ${error.message}`);
     } finally {
       setIsSyncing(false);

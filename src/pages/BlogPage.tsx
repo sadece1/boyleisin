@@ -10,6 +10,7 @@ import { Input } from '@/components/Input';
 import { formatDate } from '@/utils/validation';
 import { useBlogStore } from '@/store/blogStore';
 import { BlogPost } from '@/types';
+import { logger } from '@/utils/logger';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,7 +31,7 @@ export const BlogPage = () => {
       try {
         await fetchBlogs({}, 1);
       } catch (error) {
-        console.error('Failed to load blogs:', error);
+        logger.error('Failed to load blogs:', error);
         // fetchBlogs will handle the error and use mock data
       }
     };
@@ -130,7 +131,7 @@ export const BlogPage = () => {
         alert('Newsletter\'a başarıyla kaydoldunuz!');
         setNewsletterEmail('');
       } catch (error) {
-        console.error('Failed to subscribe to newsletter:', error);
+        logger.error('Failed to subscribe to newsletter:', error);
         alert('Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.');
       }
     }

@@ -20,10 +20,23 @@ export default defineConfig({
     // Tree shaking and dead code elimination
     rollupOptions: {
       output: {
-        // Disable manual chunks to let Vite handle chunk splitting automatically
-        // This prevents initialization errors from circular dependencies
-        // Vite's automatic chunk splitting is more reliable
-        
+        // Manual chunk splitting for better tree shaking and code splitting
+        // Separate large libraries into their own chunks for better caching
+        manualChunks: (id) => {
+          // Separate node_modules into vendor chunks
+          if (id.includes('node_modules')) {
+            // Framer Motion - large animation library, separate chunk
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer-motion';
+            }
+            // React and React DOM - core dependencies
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            // Other vendor libraries
+            return 'vendor';
+          }
+        },
         // Optimize chunk file names
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
@@ -42,6 +55,8 @@ export default defineConfig({
     sourcemap: false,
     // Report compressed size
     reportCompressedSize: true,
+    // Target modern browsers for smaller bundle (ES2020+)
+    target: 'es2020',
   },
   server: {
     port: 5173,

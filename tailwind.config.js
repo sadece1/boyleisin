@@ -4,7 +4,12 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Optimize CSS purging - remove unused styles
+  // Tailwind v3+ automatically purges unused CSS based on content paths
   darkMode: 'class',
+  // Safelist: classes that should never be purged (if needed)
+  // Currently empty - let Tailwind purge everything unused
+  safelist: [],
   theme: {
     extend: {
       colors: {
