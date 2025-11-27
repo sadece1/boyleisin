@@ -32,6 +32,7 @@ import userOrdersRoutes from './routes/userOrders.routes';
 import { getAll as getAllMessages } from './controllers/contactController';
 import { authenticate, authorizeAdmin } from './middleware/auth';
 import { staticCacheHeaders, cacheMiddleware, noCache } from './middleware/cache';
+import { ssrMetaTags } from './middleware/ssrMetaTags';
 
 dotenv.config();
 
@@ -346,6 +347,11 @@ app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/references', referencesRoutes);
 app.use('/api/brands', brandsRoutes);
 app.use('/api/user-orders', userOrdersRoutes);
+
+// Server-side meta tags for SEO (before 404 handler, after API routes)
+// This injects dynamic meta tags into HTML for better SEO and social sharing
+// Works even without full SSR - at least provides meta tags server-side
+app.use(ssrMetaTags);
 
 // 404 handler
 app.use(notFoundHandler);
