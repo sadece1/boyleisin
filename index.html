@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#18412d" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="description" content="WeCamp - Doğada unutulmaz kamp deneyimleri için kamp alanları ve kiralık kamp malzemeleri. Türkiye'nin en kapsamlı kamp pazar yeri." />
     <meta name="keywords" content="kamp, kamp alanı, kamp malzemeleri, doğa, outdoor, kamp çadırı, kamp ekipmanları, kiralık kamp malzemeleri, Türkiye kamp alanları, kamp rehberi, doğa aktiviteleri, kamp deneyimi" />
     <meta name="author" content="WeCamp" />
@@ -16,8 +18,10 @@
       /* Critical CSS - Above the fold styles */
       body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       #root{min-height:100vh;display:flex;flex-direction:column}
-      /* Prevent layout shift */
+      /* Prevent layout shift - CLS fix */
       img{max-width:100%;height:auto;display:block}
+      img[width][height]{aspect-ratio:attr(width)/attr(height)}
+      .hero-section img{width:100%;height:auto;aspect-ratio:16/9}
       /* Hero section critical styles for LCP */
       .hero-section{position:relative;min-height:85vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;overflow:hidden}
       .hero-bg{position:absolute;inset:0;background:linear-gradient(to bottom right,#18412d,#216042,#27784f)}
@@ -32,23 +36,33 @@
     <!-- LCP Optimization: Preload critical resources -->
     <!-- Hero image preload for LCP (Largest Contentful Paint) optimization -->
     <!-- Preload LCP image to make it discoverable in initial HTML document -->
-    <link rel="preload" as="image" href="/tent-4534210_1280.jpg?w=1280&q=80" fetchpriority="high" />
-    <link rel="preload" as="image" href="/tent-4534210_1280.jpg?fm=webp&w=1280&q=80" fetchpriority="high" type="image/webp" />
+    <link rel="preload" as="image" href="/tent-4534210_1280.jpg?w=1280&q=80&fm=webp" fetchpriority="high" type="image/webp" />
+    <link rel="preload" as="image" href="/tent-4534210_1280.jpg?w=1280&q=80&fm=avif" fetchpriority="high" type="image/avif" />
     
     <!-- DNS prefetch and preconnect for external resources -->
     <link rel="dns-prefetch" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
     
     <!-- Preconnect to API domain for faster API requests -->
-    <link rel="preconnect" href="https://sadece1deneme.com" />
+    <link rel="dns-prefetch" href="https://sadece1deneme.com" />
+    <link rel="preconnect" href="https://sadece1deneme.com" crossorigin />
     
     <!-- Open Graph / Facebook - Will be set dynamically by SEO component -->
     <!-- Twitter - Will be set dynamically by SEO component -->
     <!-- Canonical URL - Will be set dynamically by SEO component -->
+    <link rel="canonical" href="https://sadece1deneme.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sadece1deneme.com/" />
+    <meta property="og:site_name" content="WeCamp" />
+    <meta name="twitter:card" content="summary_large_image" />
     
     <title>WeCamp - Kamp Alanı Pazar Yeri | Doğada Unutulmaz Deneyimler</title>
   </head>
   <body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-primary-600 focus:text-white">
+      Ana içeriğe atla
+    </a>
     <div id="root"></div>
     <!-- Main script - module type automatically defers execution -->
     <script type="module" src="/src/main.tsx"></script>

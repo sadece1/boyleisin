@@ -99,7 +99,7 @@ function AppContent() {
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
       <ScrollToTop />
       {!isAdmin && <Navbar />}
-      <main className="flex-grow">
+      <main id="main-content" className="flex-grow" role="main" aria-label="Ana içerik">
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
