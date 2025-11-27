@@ -52,11 +52,19 @@ export const AddCategoryPage = () => {
       const normalizedData = {
         ...data,
         parentId: data.parentId && data.parentId.trim() !== '' ? data.parentId : null,
+        // order'ı sayıya dönüştür (form'dan string gelebilir)
+        order: typeof data.order === 'number' ? data.order : (data.order ? parseInt(String(data.order), 10) : 0),
       };
       await categoryManagementService.createCategory(normalizedData);
       navigate(routes.adminCategories);
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Kategori eklenemedi');
+      const errorMessage = error instanceof Error ? error.message : 'Kategori eklenemedi';
+      // 409 Conflict için daha anlaşılır mesaj
+      if (errorMessage.includes('zaten mevcut') || errorMessage.includes('already exists')) {
+        alert(`⚠️ Bu kategori zaten mevcut!\n\nKategori adı veya slug'u değiştirip tekrar deneyin.`);
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 

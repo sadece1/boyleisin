@@ -15,14 +15,27 @@ const transformCategory = (cat: any): Category => ({
 });
 
 // Helper function to transform frontend category to backend format
-const transformToBackend = (cat: Partial<Category>): any => ({
-  name: cat.name,
-  slug: cat.slug,
-  description: cat.description || null,
-  parent_id: cat.parentId !== undefined ? (cat.parentId || null) : undefined,
-  icon: cat.icon || null,
-  order: cat.order ?? 0,
-});
+const transformToBackend = (cat: Partial<Category>): any => {
+  // order'ı sayıya dönüştür (form'dan string gelebilir)
+  let orderValue = 0;
+  if (cat.order !== undefined && cat.order !== null) {
+    if (typeof cat.order === 'number') {
+      orderValue = cat.order;
+    } else {
+      const parsed = parseInt(String(cat.order), 10);
+      orderValue = isNaN(parsed) ? 0 : parsed;
+    }
+  }
+
+  return {
+    name: cat.name,
+    slug: cat.slug,
+    description: cat.description || null,
+    parent_id: cat.parentId !== undefined ? (cat.parentId || null) : undefined,
+    icon: cat.icon || null,
+    order: orderValue,
+  };
+};
 
 export const categoryManagementService = {
   async getAllCategories(): Promise<Category[]> {
