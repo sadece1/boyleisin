@@ -126,8 +126,14 @@ app.use(compression({
     if (req.headers['x-no-compression']) {
       return false;
     }
-    // Use compression for text-based content
-    return compression.filter(req, res);
+    // Compress text-based content (JSON, HTML, CSS, JS)
+    const contentType = res.getHeader('content-type') || '';
+    return typeof contentType === 'string' && (
+      contentType.includes('text/') ||
+      contentType.includes('application/json') ||
+      contentType.includes('application/javascript') ||
+      contentType.includes('application/xml')
+    );
   },
 }));
 
