@@ -354,10 +354,10 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-visible">
+    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm min-h-fit">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-visible bg-white dark:bg-gray-900">
         {/* Üst Satır: Logo, Arama, Navigasyon Linkleri, Aksiyonlar */}
-        <div className="flex items-center justify-between h-16 py-2">
+        <div className="flex items-center justify-between h-16 py-2 bg-white dark:bg-gray-900">
           {/* Logo */}
           <Link 
             to={routes.home} 
@@ -534,7 +534,7 @@ export const Navbar = () => {
         </div>
 
         {/* Alt Satır: Kategoriler */}
-        <div className="hidden lg:flex items-center justify-center gap-4 h-14 border-t border-gray-200 dark:border-gray-700 flex-wrap overflow-visible">
+        <div className="hidden lg:flex items-center justify-center gap-4 min-h-14 border-t border-gray-200 dark:border-gray-700 flex-wrap overflow-visible bg-white dark:bg-gray-900 py-2">
           {/* Categories Dropdown */}
           {categories.map((category) => (
             <div 
