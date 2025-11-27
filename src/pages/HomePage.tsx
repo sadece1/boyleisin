@@ -134,7 +134,7 @@ export const HomePage = () => {
             type="image/webp"
             sizes="100vw"
           />
-          {/* Fallback to optimized JPEG - matches preload URL */}
+          {/* Fallback to optimized JPEG */}
           <img
             src="/tent-4534210_1280.jpg?w=1280&q=80"
             alt="Kamp alanı ve doğa manzarası"

@@ -35,22 +35,12 @@ export default defineConfig({
     // Tree shaking and dead code elimination
     rollupOptions: {
       output: {
-        // Manual chunk splitting to prevent React multiple instances error
+        // CRITICAL: Group ALL vendor packages into single chunk to prevent React multiple instances
+        // This ensures React is loaded only once, preventing "Cannot set properties of undefined" error
         manualChunks: (id) => {
-          // Group ALL React-related packages together to prevent multiple instances
           if (id.includes('node_modules')) {
-            // React core packages
-            if (
-              id.includes('/react/') ||
-              id.includes('/react-dom/') ||
-              id.includes('/react/jsx-runtime') ||
-              id.includes('/react-router') ||
-              id.includes('/react-helmet') ||
-              id.includes('/react-hook-form')
-            ) {
-              return 'vendor-react';
-            }
-            // All other node_modules go to vendor chunk
+            // Put ALL node_modules in a single vendor chunk
+            // This prevents any package from loading its own React instance
             return 'vendor';
           }
         },

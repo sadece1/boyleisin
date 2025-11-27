@@ -31,9 +31,8 @@
     
     <!-- LCP Optimization: Preload critical resources -->
     <!-- Hero image preload for LCP (Largest Contentful Paint) optimization -->
-    <!-- Note: Using <picture> element with srcset, so preload only the fallback JPEG -->
-    <!-- Browser will automatically select the best format from srcset -->
-    <link rel="preload" as="image" href="/tent-4534210_1280.jpg?w=1280&q=80" fetchpriority="high" />
+    <!-- Note: Preload removed - <picture> element with srcset handles format selection automatically -->
+    <!-- Browser will automatically select and preload the best format from srcset -->
     
     <!-- DNS prefetch and preconnect for external resources -->
     <link rel="dns-prefetch" href="https://images.unsplash.com" />
