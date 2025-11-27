@@ -67,7 +67,20 @@ export const categoryManagementService = {
       throw new Error('Failed to create category');
     } catch (error: any) {
       // 409 Conflict = Kategori zaten var (duplicate slug/name)
+      // Mevcut kategoriyi bulup döndür
       if (error.response?.status === 409) {
+        const slug = data.slug || data.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        if (slug) {
+          try {
+            const existingCategory = await this.getCategoryBySlug(slug);
+            if (existingCategory) {
+              // Kategori zaten var, mevcut kategoriyi döndür
+              return existingCategory;
+            }
+          } catch (lookupError) {
+            // Slug lookup başarısız, hata mesajı göster
+          }
+        }
         const message = error.response?.data?.message || 'Bu kategori zaten mevcut (aynı slug veya isim)';
         throw new Error(message);
       }
