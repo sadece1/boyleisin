@@ -51,13 +51,14 @@ export default defineConfig({
         // Manual chunking for better code splitting
         // Separate large libraries to reduce initial bundle size
         manualChunks: (id) => {
-          // React core + React Router + React Helmet - MUST stay together
-          // These are tightly coupled and splitting causes "createContext" errors
-          if (id.includes('node_modules/react/') || 
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react/jsx-runtime') ||
-              id.includes('node_modules/react-router-dom/') ||
-              id.includes('node_modules/react-helmet-async/')) {
+          // ALL React-related packages MUST stay together
+          // Splitting causes "createContext" errors because React internals are shared
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/react-helmet') ||
+              id.includes('node_modules/react-hook-form') ||
+              id.includes('node_modules/@types/react')) {
             return 'react-vendor';
           }
           
@@ -74,11 +75,6 @@ export default defineConfig({
           // Swiper - carousel library
           if (id.includes('node_modules/swiper/')) {
             return 'swiper';
-          }
-          
-          // Form libraries
-          if (id.includes('node_modules/react-hook-form/')) {
-            return 'form-vendor';
           }
           
           // Other vendor libraries
