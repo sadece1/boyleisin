@@ -51,11 +51,13 @@ export default defineConfig({
         // Manual chunking for better code splitting
         // Separate large libraries to reduce initial bundle size
         manualChunks: (id) => {
-          // React core - keep together to prevent multiple instances
+          // React core + React Router + React Helmet - MUST stay together
+          // These are tightly coupled and splitting causes "createContext" errors
           if (id.includes('node_modules/react/') || 
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/react/jsx-runtime') ||
-              id.includes('node_modules/react-router-dom/')) {
+              id.includes('node_modules/react-router-dom/') ||
+              id.includes('node_modules/react-helmet-async/')) {
             return 'react-vendor';
           }
           
