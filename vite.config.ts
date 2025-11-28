@@ -12,7 +12,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
     // Prevent multiple React instances (fixes "Cannot set properties of undefined" error)
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'scheduler'],
   },
   // Optimize dependencies to prevent multiple React instances
   optimizeDeps: {
@@ -29,6 +29,8 @@ export default defineConfig({
     ],
     // Force all React-related deps to be pre-bundled together
     force: true,
+    // Exclude React from other chunks
+    exclude: [],
     esbuildOptions: {
       // Force ESM format to prevent CommonJS issues
       format: 'esm',
@@ -48,39 +50,23 @@ export default defineConfig({
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
-        // Manual chunking for better code splitting
-        // Separate large libraries to reduce initial bundle size
+        // Manual chunking - ONLY isolate React to prevent multiple instances
+        // Let Vite handle other chunking automatically for better compatibility
         manualChunks: (id) => {
-          // ALL React-related packages MUST stay together
-          // Splitting causes "createContext" errors because React internals are shared
+          // CRITICAL: ALL React-related packages MUST stay together
+          // This prevents "Cannot set properties of undefined (setting 'Children')" errors
+          // Check for React FIRST before any other checks
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') ||
               id.includes('node_modules/react-router') ||
               id.includes('node_modules/react-helmet') ||
               id.includes('node_modules/react-hook-form') ||
-              id.includes('node_modules/@types/react')) {
+              id.includes('node_modules/@types/react') ||
+              id.includes('node_modules/scheduler')) {
             return 'react-vendor';
           }
-          
-          // GSAP - large animation library, used only in specific pages
-          if (id.includes('node_modules/gsap/')) {
-            return 'gsap';
-          }
-          
-          // Framer Motion - large animation library
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'framer-motion';
-          }
-          
-          // Swiper - carousel library
-          if (id.includes('node_modules/swiper/')) {
-            return 'swiper';
-          }
-          
-          // Other vendor libraries
-          if (id.includes('node_modules/')) {
-            return 'vendor';
-          }
+          // Let Vite handle all other chunking automatically
+          // This prevents React from being split across multiple chunks
         },
       },
       // Aggressive tree shaking for unused code elimination
