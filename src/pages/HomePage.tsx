@@ -293,6 +293,8 @@ export const HomePage = () => {
                         src={post.image}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        width={400}
+                        height={225}
                         priority={index < 2} // First 2 blog images above-the-fold: eager loading
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -393,6 +395,8 @@ export const HomePage = () => {
                           src={item.images[0]}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          width={400}
+                          height={225}
                           priority={index < 2} // First 2 gear images above-the-fold: eager loading
                         />
                       ) : (

@@ -27,7 +27,16 @@
       /* Prevent layout shift - CLS fix */
       img{max-width:100%;height:auto;display:block}
       img[width][height]{aspect-ratio:attr(width)/attr(height)}
-      .hero-section img{width:100%;height:auto;aspect-ratio:16/9}
+      picture{display:block;width:100%}
+      picture img{width:100%;height:auto}
+      /* Prevent CLS for images without dimensions */
+      img:not([width]):not([height]){aspect-ratio:16/9;object-fit:cover}
+      /* Hero section image CLS fix */
+      .hero-section img{width:100%;height:auto;aspect-ratio:1280/853}
+      /* Touch action for mobile - prevent layout shift on touch */
+      *{touch-action:manipulation}
+      /* Prevent font layout shift */
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;font-display:swap}
       /* Hero section critical styles for LCP */
       .hero-section{position:relative;min-height:85vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;overflow:hidden}
       .hero-bg{position:absolute;inset:0;background:linear-gradient(to bottom right,#18412d,#216042,#27784f)}

@@ -91,8 +91,17 @@ export const OptimizedImage = ({
     setIsLoading(false);
   };
 
+  // Calculate aspect ratio for CLS prevention
+  const aspectRatio = width && height ? width / height : 16 / 9;
+  
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div 
+      className={`relative overflow-hidden ${className}`}
+      style={{
+        aspectRatio: width && height ? `${width}/${height}` : '16/9',
+        minHeight: height ? `${height}px` : undefined,
+      }}
+    >
       {isLoading && (
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
       )}
@@ -100,6 +109,8 @@ export const OptimizedImage = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: isLoading ? 0 : 1 }}
         transition={{ duration: 0.3 }}
+        className="block w-full h-full"
+        style={{ aspectRatio: `${aspectRatio}` }}
       >
         {/* AVIF format (best compression) */}
         {srcSet && (
@@ -130,6 +141,10 @@ export const OptimizedImage = ({
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
+          style={{
+            aspectRatio: width && height ? `${width}/${height}` : '16/9',
+            touchAction: 'manipulation', // Prevent layout shift on mobile touch
+          }}
         />
       </motion.picture>
     </div>

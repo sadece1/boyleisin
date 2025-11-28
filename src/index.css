@@ -12,11 +12,54 @@
   html {
     @apply scroll-smooth;
     overflow-x: hidden;
+    /* Prevent layout shift on scroll */
+    scroll-behavior: smooth;
   }
 
   body {
     @apply antialiased;
     overflow-x: hidden;
+    /* Prevent font layout shift */
+    font-display: swap;
+    /* Mobile touch optimization - prevent layout shift */
+    touch-action: manipulation;
+  }
+  
+  /* CLS Prevention - All images should have aspect ratio */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  img[width][height] {
+    aspect-ratio: attr(width) / attr(height);
+  }
+  
+  /* Prevent CLS for images without dimensions */
+  img:not([width]):not([height]) {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  
+  picture {
+    display: block;
+    width: 100%;
+  }
+  
+  picture img {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Prevent layout shift on mobile touch */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* Buttons and interactive elements need pan-x for horizontal scrolling */
+  button, a, [role="button"] {
+    touch-action: pan-x pan-y;
   }
 }
 

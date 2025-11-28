@@ -189,12 +189,16 @@ export const ImageSlider = ({
             style={{
               width: `${slideWidth}%`,
               minWidth: `${slideWidth}%`,
+              aspectRatio: '16/9', // Prevent CLS
+              touchAction: 'pan-y pinch-zoom', // Mobile touch optimization
             }}
           >
             <OptimizedImage
               src={image}
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover select-none pointer-events-none"
+              width={800}
+              height={450}
             />
           </div>
         ))}
